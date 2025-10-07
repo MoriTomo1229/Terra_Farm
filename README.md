@@ -24,6 +24,6 @@ foobar.pluralize('word')
 
 ## Contributing
 
-## License
+## Account
 
 [X](https://x.com/himazin_ac?s=21)
