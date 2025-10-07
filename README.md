@@ -18,6 +18,9 @@ pip install foobar
 ```python
 import foobar
 
+print hello world
+foobar.hello_world()
+
 # returns 'words'
 foobar.pluralize('word')
 
