@@ -1,0 +1,107 @@
+/* 基本設定 */
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+  margin: 0;
+  background: #04040a;
+  color: #fff;
+  padding: 12px;
+}
+
+.background {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: url('../images/earth.jpg') no-repeat center center fixed;
+  background-size: cover;
+  filter: brightness(0.35) blur(3px);
+}
+
+.panel {
+  background: linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.06));
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+
+/* スタート画面 */
+.start-panel { max-width: 900px; margin: 24px auto; padding: 18px; }
+.start-header { display: flex; align-items: center; gap: 12px; }
+.logo { height: 56px; }
+.subtitle { color: #dfe7f5; margin-top: 6px; margin-bottom: 12px; }
+.country-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.country-option { display: inline-flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.02); cursor: pointer; border: 1px solid rgba(255,255,255,0.03); }
+.country-option input { margin-right: 8px; }
+.flag { font-size: 20px; }
+.budget-input, .year-select { margin: 10px 0; }
+.budget-input input, .year-select select { padding: 8px; border-radius: 6px; border: none; width: 200px; }
+.start-actions { margin-top: 12px; }
+.start-actions button { background: linear-gradient(90deg,#ff7e5f,#feb47b,#ff6a00); border: none; padding: 10px 14px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; }
+
+/* ヘッダー */
+.header { display: none; align-items: center; gap: 12px; padding: 10px; margin-bottom: 6px; background: rgba(0,0,0,0.55); }
+.logo-small { height: 42px; margin-left: 8px; }
+.title-block { display: flex; flex-direction: column; align-items: flex-start; }
+.selected-country { font-size: 20px; margin-top: 4px; }
+
+/* ゲームレイアウト */
+#game-container { display: none; grid-template-columns: 320px 1fr 360px; gap: 12px; margin-top: 8px; }
+.status-panel p { margin: 6px 0; color: #ffd9b8; font-weight: 600; }
+
+/* マップ */
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(100, 1fr);
+  /* ▼▼▼ 国境の外を黒くするように修正 ▼▼▼ */
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 8px;
+  overflow: hidden; /*
+  
+  はみ出し防止 */
+}
+.map-grid div {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+/* 凡例 */
+.legend { margin-top: 6px; font-size: 0.9rem; color: #ffd9b8; }
+.legend-box { display: inline-block; width: 14px; height: 14px; margin-right: 4px; border-radius: 3px; vertical-align: middle; }
+/* ▼▼▼ JSの6段階の色分けに凡例を統一 ▼▼▼ */
+.legend-box.p1 { background: #d9534f; } /* 不毛 (赤) */
+.legend-box.p2 { background: #f0ad4e; } /* やや不毛 (オレンジ) */
+.legend-box.p3 { background: #ffd700; } /* 草地 (ゴールド) */
+.legend-box.p4 { background: #8bc34a; } /* 緑 (ライトグリーン) */
+.legend-box.p5 { background: #5cb85c; } /* 濃い緑 (グリーン) */
+.legend-box.p6 { background: #1b5e20; } /* 非常に濃い緑 (ダークグリーン) */
+
+/* 操作パネル */
+.slider-row, .choice-row { margin: 10px 0; }
+.muted { color: #ffd9b8; }
+.warning { color: #ff6b6b; font-weight: 700; min-height: 1.2rem; }
+input[type="range"] { width: 100%; }
+.buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+button { background: linear-gradient(90deg,#1e90ff,#00bfff); border: none; padding: 10px 12px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; }
+
+/* 結果とログ */
+.result { font-size: 1.05rem; color: #fff9c4; }
+.event { color: #ffd1f0; }
+.log-area { max-height: 220px; overflow: auto; background: rgba(255,255,255,0.02); padding: 8px; margin-top: 8px; border-radius: 6px; font-size: 0.95rem; }
+
+/* モーダル */
+.modal-hidden { display: none; }
+.modal-visible { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+.modal-content { width: min(720px, 96%); text-align: center; padding: 18px; border-radius: 10px; background: linear-gradient(180deg,#20101a,#0b0510); }
+
+/* レスポンシブ対応 */
+@media (max-width: 1200px) {
+  #game-container { grid-template-columns: 1fr 1fr; }
+  #status-display { grid-column: 1 / -1; }
+}
+@media (max-width: 768px) {
+  #game-container { grid-template-columns: 1fr; }
+}

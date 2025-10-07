@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Terra Farm</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="background"></div>
+
+  <!-- ==================== スタート画面 ==================== -->
+  <div id="start-screen" class="panel start-panel">
+    <div class="start-header">
+      <img src="images/nasa_logo.png" alt="NASA Logo" class="logo"/>
+      <h1>Terra Farm </h1>
+    </div>
+    <p class="subtitle">国を選択し、初期予算とミッション年を設定して開始してください。</p>
+
+    <div class="country-list">
+      <label class="country-option"><input type="radio" name="country" value="usa" checked> <span class="flag">🇺🇸</span> United States</label>
+      <label class="country-option"><input type="radio" name="country" value="china"> <span class="flag">🇨🇳</span> China</label>
+      <label class="country-option"><input type="radio" name="country" value="india"> <span class="flag">🇮🇳</span> India</label>
+      <label class="country-option"><input type="radio" name="country" value="brazil"> <span class="flag">🇧🇷</span> Brazil</label>
+      <label class="country-option"><input type="radio" name="country" value="egypt"> <span class="flag">🇪🇬</span> Egypt</label>
+      <label class="country-option"><input type="radio" name="country" value="ireland"> <span class="flag">🇮🇪</span> Ireland</label>
+    </div>
+
+    <div class="budget-input">
+      <label for="budget-input">初期予算:</label>
+      <input id="budget-input" type="text" placeholder="例: 200B or 500M" value="200B">
+    </div>
+
+    <!-- ▼▼▼ 年の選択肢を 01 から 05 に修正 ▼▼▼ -->
+    <div class="year-select" style="margin: 10px 0;">
+      <label for="year-select">ミッション年:</label>
+      <select id="year-select" style="padding: 8px; border-radius: 6px; border: none;">
+        <option value="01">2001</option>
+        <option value="02">2002</option>
+        <option value="03">2003</option>
+        <option value="04">2004</option>
+        <option value="05">2005</option>
+      </select>
+    </div>
+    <!-- ▲▲▲ 修正はここまで ▲▲▲ -->
+
+    <div class="start-actions">
+      <button id="start-button">ミッション開始</button>
+    </div>
+    <div id="start-error" class="warning"></div>
+  </div>
+
+  <!-- ==================== メインゲーム画面（変更なし） ==================== -->
+  <header class="header panel" id="main-header">
+    <img src="images/nasa_logo.png" alt="NASA Logo" class="logo-small"/>
+    <div class="title-block">
+      <h1 id="game-title">Terra Farm</h1>
+      <div id="selected-country" class="selected-country"></div>
+    </div>
+  </header>
+  <main id="game-container">
+    <!-- ... このセクション以降のHTMLコンテンツに変更はありません ... -->
+    <section id="status-display" class="panel status-panel">
+      <h2>ステータス</h2>
+      <p>ターン: <span id="turn-counter">1</span> / <span id="max-turns">10</span></p>
+      <p>予算: <span id="budget-value">$0</span></p>
+      <p>総食料価値: <span id="total-food-value">$0</span></p>
+      <p>環境スコア: <span id="env-score-value">70</span></p>
+      <p>技術レベル: <span id="era-value">Stone Age</span></p>
+      <p>選択中の作物: <span id="crop-value">-</span></p>
+    </section>
+    <section id="left-column">
+      <div id="data-display" class="panel data-panel">
+        <h3>📡 衛星データ</h3>
+        <p>平均NDVI: <span id="ndvi-value">-</span></p>
+        <p>土壌水分: <span id="moisture-value">-</span>%</p>
+        <p>予測降水量: <span id="precipitation-value">-</span> mm</p>
+        <p>平均気温: <span id="temperature-value">-</span> °C</p>
+      </div>
+      <div id="map-panel" class="panel map-panel">
+        <h3>🌍 フィールドマップ (NDVI)</h3>
+        <div id="map" class="map-grid"></div>
+        <div class="legend">
+          <span class="legend-box p1"></span> 不毛
+          <span class="legend-box p2"></span> やや不毛
+          <span class="legend-box p3"></span> 草地
+          <span class="legend-box p4"></span> 緑
+          <span class="legend-box p5"></span> 濃い緑
+          <span class="legend-box p6"></span> 非常に豊か
+      </div>
+      </div>
+    </section>
+    <section id="decision-panel" class="panel decision-panel">
+      <h3>アクション (投資額)</h3>
+      <div class="choice-row">
+        <label for="crop-select">作物選択:</label>
+        <select id="crop-select"></select>
+      </div>
+      <div class="slider-row">
+        <label>肥料: <span id="fertilizer-value">$0</span></label>
+        <input id="fertilizer-slider" type="range" min="0" max="1000000000" step="1000000" value="0" title="肥料投資額">
+      </div>
+      <div class="slider-row">
+        <label>灌漑: <span id="irrigation-value">$0</span></label>
+        <input id="irrigation-slider" type="range" min="0" max="1000000000" step="1000000" value="0" title="灌漑投資額">
+      </div>
+      <div class="slider-row">
+        <label>技術開発: <span id="tech-value">$0</span></label>
+        <input id="tech-slider" type="range" min="0" max="1000000000" step="1000000" value="0" title="技術開発投資額">
+      </div>
+      <p class="muted">残存予算: <span id="remaining-budget">$0</span></p>
+      <p id="allocation-warning" class="warning"></p>
+      <div class="buttons">
+        <button id="execute-turn-button">ターン実行</button>
+        <button id="auto-allocate-button">予算自動配分</button>
+      </div>
+    </section>
+    <section id="result-panel" class="panel result-panel">
+      <h3>ターン結果</h3>
+      <div id="turn-result-text" class="result"></div>
+      <div id="event-text" class="event"></div>
+      <div id="mini-graph" style="display:flex; gap:4px; height:80px; align-items:flex-end; margin-top:8px;"></div>
+      <h4>ミッションログ</h4>
+      <div id="log" class="log-area"></div>
+    </section>
+  </main>
+  <div id="game-over-modal" class="modal-hidden">
+    <div class="modal-content panel">
+      <h2>ミッション完了</h2>
+      <p>総収入: <span id="final-food"></span></p>
+      <p>最終環境スコア: <span id="final-env"></span></p>
+      <p>最終技術レベル: <span id="final-tech"></span></p>
+      <hr>
+      <p>最終スコア: <strong id="final-score"></strong></p>
+      <div class="modal-actions" style="margin-top: 16px;">
+        <button id="replay-button">もう一度プレイ</button>
+        <button id="download-log">ログをダウンロード</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
+
