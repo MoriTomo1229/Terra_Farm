@@ -26,4 +26,4 @@ foobar.pluralize('word')
 
 ## License
 
-[MIT](https://x.com/himazin_ac?s=21)
+[X](https://x.com/himazin_ac?s=21)
