@@ -1,0 +1,146 @@
+/* 基本設定 */
+* { box-sizing: border-box; }
+body {
+  font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+  margin: 0;
+  background: #04040a;
+  color: #fff;
+  padding: 12px;
+}
+
+.background {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: url('../images/earth.jpg') no-repeat center center fixed;
+  background-size: cover;
+  filter: brightness(0.35) blur(3px);
+}
+
+.panel {
+  background: linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.06));
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  backdrop-filter: saturate(1.1);
+}
+
+/* スタート画面 */
+.start-panel { max-width: 980px; margin: 24px auto; padding: 18px; }
+.start-header { display: flex; align-items: center; gap: 12px; }
+.logo { height: 56px; }
+.subtitle { color: #dfe7f5; margin-top: 6px; margin-bottom: 12px; }
+.country-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.country-option { display: inline-flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.02); cursor: pointer; border: 1px solid rgba(255,255,255,0.03); }
+.country-option input { margin-right: 8px; }
+.flag { font-size: 20px; }
+.budget-input, .year-select { margin: 10px 0; }
+.budget-input input, .year-select select { padding: 8px; border-radius: 6px; border: none; width: 200px; }
+.start-actions { margin-top: 12px; }
+.start-actions button { background: linear-gradient(90deg,#ff7e5f,#feb47b,#ff6a00); border: none; padding: 10px 14px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; }
+
+/* ニュースバナー */
+#news-root { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 5; }
+.news-banner {
+  background: rgba(255,255,255,0.12);
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  animation: fadeNews 4s ease forwards;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+}
+@keyframes fadeNews {
+  0% { opacity: 0; transform: translate(-50%, -20px); }
+  15%,85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+/* ヘッダー */
+.header { display: none; align-items: center; gap: 12px; padding: 10px; margin-bottom: 6px; background: rgba(0,0,0,0.55); }
+.logo-small { height: 42px; margin-left: 8px; }
+.title-block { display: flex; flex-direction: column; align-items: flex-start; }
+.selected-country { font-size: 20px; margin-top: 4px; }
+
+/* ゲームレイアウト */
+#game-container { display: none; grid-template-columns: 1fr 340px 380px; gap: 12px; margin-top: 8px; }
+#status-display { grid-column: 1; }
+#game-container > .panel:nth-of-type(2) { grid-column: 2; }
+#game-container > .panel:nth-of-type(3) { grid-column: 3; }
+.status-panel p { margin: 6px 0; color: #ffd9b8; font-weight: 600; }
+
+/* マップ */
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(100, 1fr);
+  background: #000; /* 国境外を黒に */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 8px;
+  overflow: hidden;
+}
+.map-grid div {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  transition: background 0.35s ease-in-out;
+}
+
+/* 凡例 */
+.legend { margin-top: 6px; font-size: 0.9rem; color: #ffd9b8; }
+.legend-box { display: inline-block; width: 14px; height: 14px; margin-right: 4px; border-radius: 3px; vertical-align: middle; }
+.legend-box.p1 { background: #d9534f; }
+.legend-box.p2 { background: #f0ad4e; }
+.legend-box.p3 { background: #ffd700; }
+.legend-box.p4 { background: #8bc34a; }
+.legend-box.p5 { background: #5cb85c; }
+.legend-box.p6 { background: #1b5e20; }
+
+/* 操作パネル */
+.slider-row, .choice-row { margin: 10px 0; }
+.muted { color: #ffd9b8; }
+.warning { color: #ff6b6b; font-weight: 700; min-height: 1.2rem; }
+input[type="range"] { width: 100%; }
+
+/* スライダー視覚化 */
+input[type="range"] {
+  background: linear-gradient(90deg, #00bfff var(--percent, 0%), #333 0%);
+  height: 8px; border-radius: 999px; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.5); }
+input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: none; }
+
+.buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+button { background: linear-gradient(90deg,#1e90ff,#00bfff); border: none; padding: 10px 12px; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; transition: 0.2s ease; }
+button:hover { filter: brightness(1.15); transform: translateY(-1px); }
+button.accent { background: linear-gradient(90deg,#8a2be2,#da70d6); }
+
+/* 小パネル */
+.small-panel { margin-top: 10px; }
+#unlock-list { margin: 6px 0 0; padding-left: 18px; }
+
+/* 結果とログ */
+.result { font-size: 1.05rem; color: #fff9c4; }
+.event { color: #ffd1f0; }
+.un-report { margin-top: 6px; color: #c0f0ff; font-style: italic; }
+.log-area { max-height: 240px; overflow: auto; background: rgba(255,255,255,0.02); padding: 8px; margin-top: 8px; border-radius: 6px; font-size: 0.95rem; }
+
+/* モーダル */
+.modal-hidden { display: none; }
+.modal-visible { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; animation: appear 0.9s ease; }
+.modal-content { width: min(760px, 96%); text-align: center; padding: 18px; border-radius: 12px; background: linear-gradient(180deg,#20101a,#0b0510); }
+@keyframes appear { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+/* レスポンシブ対応 */
+@media (max-width: 1200px) {
+  #game-container { grid-template-columns: 1fr 320px; }
+  #status-display { grid-column: 1 / -1; }
+  #game-container > .panel:nth-of-type(2) { grid-column: 1; }
+  #game-container > .panel:nth-of-type(3) { grid-column: 2; }
+}
+@media (max-width: 768px) {
+  #game-container { grid-template-columns: 1fr; }
+  #status-display,
+  #game-container > .panel:nth-of-type(2),
+  #game-container > .panel:nth-of-type(3) {
+    grid-column: 1;
+  }
+}

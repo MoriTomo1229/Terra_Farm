@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Terra Farm — 完全拡張版 (Fixed)</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="background"></div>
+
+  <!-- ==================== スタート画面 ==================== -->
+  <div id="start-screen" class="panel start-panel">
+    <div class="start-header">
+      <img src="images/nasa_logo.png" alt="NASA Logo" class="logo"/>
+      <div>
+        <h1>Terra Farm — 完全拡張版</h1>
+        <p class="subtitle">国を選択し、初期予算とミッション年を設定して開始してください。</p>
+      </div>
+    </div>
+
+    <div class="country-list" role="group" aria-label="国を選択">
+      <label class="country-option"><input type="radio" name="country" value="usa" checked> <span class="flag">🇺🇸</span> United States</label>
+      <label class="country-option"><input type="radio" name="country" value="china"> <span class="flag">🇨🇳</span> China</label>
+      <label class="country-option"><input type="radio" name="country" value="india"> <span class="flag">🇮🇳</span> India</label>
+      <label class="country-option"><input type="radio" name="country" value="brazil"> <span class="flag">🇧🇷</span> Brazil</label>
+      <label class="country-option"><input type="radio" name="country" value="egypt"> <span class="flag">🇪🇬</span> Egypt</label>
+      <label class="country-option"><input type="radio" name="country" value="ireland"> <span class="flag">🇮🇪</span> Ireland</label>
+    </div>
+
+    <div class="budget-input">
+      <label for="budget-input">初期予算:</label>
+      <input id="budget-input" type="text" placeholder="例: 200B or 500M" value="200B" aria-label="初期予算入力">
+    </div>
+
+    <div class="year-select" style="margin: 10px 0;">
+      <label for="year-select">ミッション年:</label>
+      <select id="year-select" style="padding: 8px; border-radius: 6px; border: none;">
+        <option value="01">2001</option>
+        <option value="02">2002</option>
+        <option value="03">2003</option>
+        <option value="04">2004</option>
+        <option value="05">2005</option>
+      </select>
+    </div>
+
+    <div class="start-actions">
+      <button id="start-button" aria-label="ミッション開始">ミッション開始</button>
+    </div>
+    <div id="start-error" class="warning" role="alert"></div>
+  </div>
+
+  <!-- ニュースバナー -->
+  <div id="news-root" aria-live="polite"></div>
+
+  <!-- ==================== メインゲーム画面 ==================== -->
+  <header class="header panel" id="main-header" role="banner">
+    <img src="images/nasa_logo.png" alt="NASA Logo" class="logo-small"/>
+    <div class="title-block">
+      <h1 id="game-title">Terra Farm</h1>
+      <div id="selected-country" class="selected-country"></div>
+    </div>
+  </header>
+
+  <main id="game-container" class="panel" role="main" style="background:none; box-shadow:none; border:none;">
+    <div id="status-display" class="panel">
+      <p>ターン: <strong><span id="turn-counter">0</span>/<span id="max-turns">10</span></strong></p>
+      <p>予算: <strong id="budget-value">$0</strong></p>
+      <p>総収入: <strong id="total-food-value">$0</strong></p>
+      <p>環境スコア: <strong id="env-score-value">70</strong></p>
+      <p>時代: <strong id="era-value">-</strong></p>
+      <p>作物: <strong id="crop-value">-</strong></p>
+
+      <hr>
+      <p>平均NDVI: <strong id="ndvi-value">0</strong></p>
+      <p>土壌水分: <strong id="moisture-value">0</strong></p>
+      <p>降水量: <strong id="precipitation-value">0</strong></p>
+      <p>気温: <strong id="temperature-value">0</strong> ℃</p>
+
+      <div class="legend">
+        <span class="legend-box p1"></span>貧弱
+        <span class="legend-box p2"></span>やや低
+        <span class="legend-box p3"></span>中
+        <span class="legend-box p4"></span>やや高
+        <span class="legend-box p5"></span>高
+        <span class="legend-box p6"></span>非常に高
+      </div>
+
+      <div id="map" class="map-grid" aria-label="NDVIマップ"></div>
+
+      <div class="small-panel panel">
+        <div id="mini-graph" style="display:flex; gap:4px; align-items:flex-end; height:90px;"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>政策と投資</h3>
+      <div class="choice-row">
+        <label for="crop-select">作物選択: </label>
+        <select id="crop-select"></select>
+      </div>
+
+      <div class="slider-row">
+        <label for="fertilizer-slider">肥料: <span id="fertilizer-value">$0</span></label>
+        <input id="fertilizer-slider" type="range" min="0" max="0" value="0" title="肥料の投資額" placeholder="肥料の投資額" aria-label="肥料の投資額を調整">
+      </div>
+
+      <div class="slider-row">
+        <label for="irrigation-slider">灌漑: <span id="irrigation-value">$0</span></label>
+        <input id="irrigation-slider" type="range" min="0" max="0" value="0" title="灌漑の投資額" placeholder="灌漑の投資額" aria-label="灌漑の投資額を調整">
+      </div>
+
+      <div class="slider-row">
+        <label for="tech-slider">技術: <span id="tech-value">$0</span></label>
+        <input id="tech-slider" type="range" min="0" max="0" value="0" title="技術の投資額" placeholder="技術の投資額" aria-label="技術の投資額を調整">
+      </div>
+
+      <p>残り予算: <strong id="remaining-budget">$0</strong></p>
+      <div id="allocation-warning" class="warning" role="alert"></div>
+
+      <div class="buttons">
+        <button id="execute-turn-button">ターンを実行</button>
+        <button id="auto-allocate-button" class="accent">自動配分</button>
+        <button id="special-skill">国家スキル</button>
+      </div>
+
+      <div class="small-panel panel">
+        <h4>アンロック</h4>
+        <ul id="unlock-list"></ul>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>レポート</h3>
+      <p class="result" id="turn-result-text">未実行</p>
+      <p class="event" id="event-text">-</p>
+      <p class="un-report" id="un-report">-</p>
+      <div id="log" class="log-area" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <div id="game-over-modal" class="modal-hidden" role="dialog" aria-modal="true">
+    <div class="modal-content panel">
+      <h2>ミッション完了</h2>
+      <p>総収入: <span id="final-food"></span></p>
+      <p>最終環境スコア: <span id="final-env"></span></p>
+      <p>最終技術レベル: <span id="final-tech"></span></p>
+      <hr>
+      <p>最終スコア: <strong id="final-score"></strong></p>
+      <div class="modal-actions" style="margin-top: 16px;">
+        <button id="replay-button">もう一度プレイ</button>
+        <button id="download-log">ログをダウンロード</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/phina.js@0.2.3/build/phina.js" defer></script>
+  <script src="js/config.js" defer></script>
+  <script src="js/state.js" defer></script>
+  <script src="js/ui.js" defer></script>
+  <script src="js/map.js" defer></script>
+  <script src="js/game-logic.js" defer></script>
+  <script src="js/main.js" defer></script>
+</body>
+</html>
