@@ -20,6 +20,7 @@ const elements = {
   totalFoodValue: $('#total-food-value'),
   envScoreValue: $('#env-score-value'),
   eraValue: $('#era-value'),
+  techPointsValue: $('#tech-points-value'),
   cropValue: $('#crop-value'),
 
   ndviValue: $('#ndvi-value'),
@@ -45,6 +46,8 @@ const elements = {
   eventText: $('#event-text'),
   unReport: $('#un-report'),
   log: $('#log'),
+  historyPanel: $('#history-panel'),
+  historyBody: $('#history-body'),
 
   gameOverModal: $('#game-over-modal'),
   finalFood: $('#final-food'),
@@ -94,12 +97,14 @@ function renderUI() {
   elements.totalFoodValue.textContent = formatUSD(state.totalFoodValue);
   elements.envScoreValue.textContent = state.envScore;
   elements.eraValue.textContent = ERAS[state.eraIndex];
+  elements.techPointsValue.textContent = state.techPoints.toLocaleString();
   elements.cropValue.textContent = CROPS[elements.cropSelect.value]?.name || '-';
   elements.ndviValue.textContent = state.avgNdvi.toFixed(3);
   elements.moistureValue.textContent = state.soilMoisture;
   elements.precipitationValue.textContent = state.precipitation;
   elements.temperatureValue.textContent = state.temperature;
   renderMap();
+  renderHistory();
   updateRemainingBudget();
 }
 
@@ -209,7 +214,22 @@ function addToMiniGraph(value){
 }
 
 function downloadHistory() {
-  const blob = new Blob([JSON.stringify(state.history, null, 2)], { type: 'application/json' });
+  const country = COUNTRIES[state.countryKey] || {};
+  const payload = {
+    meta: {
+      countryKey: state.countryKey,
+      countryName: country.name || '-',
+      missionYear: state.year ? 2000 + parseInt(state.year, 10) : null,
+      startingBudget: state.initialBudget,
+      remainingBudget: state.budget,
+      turnsPlayed: state.history.length,
+      turnLimit: TURN_COUNT,
+      totalFoodValue: state.totalFoodValue,
+      skillUsed: state.skillUsed
+    },
+    turns: state.history
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'terra_farm_log.json';
@@ -222,4 +242,35 @@ function log(msg) {
   p.textContent = msg;
   elements.log.appendChild(p);
   elements.log.scrollTop = elements.log.scrollHeight;
+}
+function renderHistory() {
+  if (!elements.historyBody) return;
+  elements.historyBody.innerHTML = '';
+  if (!state.history.length) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 5;
+    cell.className = 'history-empty';
+    cell.textContent = 'まだ履歴がありません。';
+    row.appendChild(cell);
+    elements.historyBody.appendChild(row);
+    return;
+  }
+  const recent = state.history.slice(-6).reverse();
+  recent.forEach(entry => {
+    const row = document.createElement('tr');
+    const alloc = `肥:${formatUSD(entry.allocations.fertilizer)} / 灌:${formatUSD(entry.allocations.irrigation)} / 技:${formatUSD(entry.allocations.tech)}`;
+    [
+      entry.turn,
+      alloc,
+      entry.avgNdvi.toFixed(3),
+      formatUSD(entry.revenue),
+      entry.envScore
+    ].forEach(value => {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.appendChild(cell);
+    });
+    elements.historyBody.appendChild(row);
+  });
 }

@@ -64,6 +64,7 @@ function checkUnlocks() {
     list.push("🛰️ 軌道ネット: 収量に+8%の補正");
   }
   list.forEach(pushUnlock);
+  return list;
 }
 
 // ==================== ターン実行 ====================
@@ -188,6 +189,32 @@ function executeTurn() {
   state.budget = Math.max(0, Math.round(state.budget - (fert + irri + tech) + revenue));
   state.totalFoodValue += revenue;
 
+  const newUnlocks = checkUnlocks();
+  state.history.push({
+    turn: state.turn,
+    crop: crop.name,
+    allocations: {
+      fertilizer: fert,
+      irrigation: irri,
+      tech
+    },
+    avgNdvi: Number(state.avgNdvi.toFixed(3)),
+    envScore: state.envScore,
+    techPoints: state.techPoints,
+    revenue,
+    totalFoodValue: state.totalFoodValue,
+    budgetRemaining: state.budget,
+    era: ERAS[state.eraIndex],
+    conditions: {
+      soilMoisture: state.soilMoisture,
+      precipitation: state.precipitation,
+      temperature: state.temperature
+    },
+    event: event || '特に大きなイベントはありませんでした。',
+    newUnlocks
+  });
+  if (typeof renderHistory === 'function') renderHistory();
+
   // 結果表示
   elements.turnResultText.textContent = `${crop.name}を${production.toLocaleString()}トン生産、収入: ${formatUSD(revenue)}`;
   elements.eventText.textContent = event || '特に大きなイベントはありませんでした。';
@@ -195,8 +222,6 @@ function executeTurn() {
 
   // ミニグラフ棒追加
   addToMiniGraph(revenue);
-
-  checkUnlocks();
 
   // 次ターンへ
   elements.executeButton.disabled = true;

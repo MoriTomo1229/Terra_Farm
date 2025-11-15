@@ -4,6 +4,7 @@ let state = {
   year: '01',
   turn: 0,
   budget: 0,
+  initialBudget: 0,
   totalFoodValue: 0,
   envScore: 70,
   techPoints: 0,
