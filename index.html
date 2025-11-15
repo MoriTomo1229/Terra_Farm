@@ -69,6 +69,7 @@
       <p>総収入: <strong id="total-food-value">$0</strong></p>
       <p>環境スコア: <strong id="env-score-value">70</strong></p>
       <p>時代: <strong id="era-value">-</strong></p>
+      <p>技術ポイント: <strong id="tech-points-value">0</strong></p>
       <p>作物: <strong id="crop-value">-</strong></p>
 
       <hr>
@@ -136,6 +137,25 @@
       <p class="event" id="event-text">-</p>
       <p class="un-report" id="un-report">-</p>
       <div id="log" class="log-area" aria-live="polite"></div>
+      <div id="history-panel" class="small-panel panel">
+        <h4>ターン履歴</h4>
+        <div class="history-table-wrap">
+          <table class="history-table" aria-label="ターン履歴の表">
+            <thead>
+              <tr>
+                <th scope="col">ターン</th>
+                <th scope="col">配分</th>
+                <th scope="col">NDVI</th>
+                <th scope="col">収入</th>
+                <th scope="col">環境</th>
+              </tr>
+            </thead>
+            <tbody id="history-body">
+              <tr><td colspan="5" class="history-empty">まだ履歴がありません。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 

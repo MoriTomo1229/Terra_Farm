@@ -122,6 +122,12 @@ button.accent { background: linear-gradient(90deg,#8a2be2,#da70d6); }
 .event { color: #ffd1f0; }
 .un-report { margin-top: 6px; color: #c0f0ff; font-style: italic; }
 .log-area { max-height: 240px; overflow: auto; background: rgba(255,255,255,0.02); padding: 8px; margin-top: 8px; border-radius: 6px; font-size: 0.95rem; }
+.history-table-wrap { max-height: 240px; overflow: auto; margin-top: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.35); }
+.history-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.history-table th, .history-table td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); text-align: left; }
+.history-table th { position: sticky; top: 0; background: rgba(10,14,25,0.9); font-weight: 600; }
+.history-table td { color: #f5f5f5; }
+.history-empty { text-align: center; color: #ffd9b8; padding: 12px 0; }
 
 /* モーダル */
 .modal-hidden { display: none; }

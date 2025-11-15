@@ -44,6 +44,7 @@ async function startGame(countryKey, startingBudget, year) {
       countryKey, year,
       turn: 0,
       budget: startingBudget,
+      initialBudget: startingBudget,
       totalFoodValue: 0,
       envScore: 70,
       techPoints: 0,
