@@ -44,6 +44,15 @@
       </select>
     </div>
 
+    <div class="challenge-select">
+      <label for="challenge-select">チャレンジ:</label>
+      <select id="challenge-select" aria-label="チャレンジ選択">
+        <option value="free">フリー（目標なし）</option>
+        <option value="env_guard">環境キーパー（最終環境スコア80以上）</option>
+        <option value="growth_drive">成長ドライブ（総収入を初期予算の1.8倍以上）</option>
+      </select>
+    </div>
+
     <div class="start-actions">
       <button id="start-button" aria-label="ミッション開始">ミッション開始</button>
     </div>
@@ -59,6 +68,7 @@
     <div class="title-block">
       <h1 id="game-title">Terra Farm</h1>
       <div id="selected-country" class="selected-country"></div>
+      <div class="challenge-badge" id="challenge-badge" aria-live="polite">チャレンジ: -</div>
     </div>
   </header>
 
@@ -70,6 +80,7 @@
       <p>環境スコア: <strong id="env-score-value">70</strong></p>
       <p>時代: <strong id="era-value">-</strong></p>
       <p>技術ポイント: <strong id="tech-points-value">0</strong></p>
+      <p class="challenge-progress-row">チャレンジ進行度: <span id="challenge-progress" class="chip chip-pending">-</span></p>
       <p>作物: <strong id="crop-value">-</strong></p>
 
       <hr>
@@ -92,6 +103,32 @@
       <div class="small-panel panel">
         <div id="mini-graph" style="display:flex; gap:4px; align-items:flex-end; height:90px;"></div>
       </div>
+      <div id="trend-chart" class="small-panel panel">
+        <h4>ターンごとのトレンド</h4>
+        <div class="trend-grid">
+          <div class="trend-series">
+            <div class="trend-series-header"><span class="dot revenue"></span>収入 <span id="trend-revenue-last" class="trend-last">-</span></div>
+            <div class="trend-bars" id="trend-revenue" aria-label="収入の推移"></div>
+            <svg class="trend-line" id="trend-revenue-line" viewBox="0 0 120 80" role="img" aria-label="収入の折れ線"></svg>
+          </div>
+          <div class="trend-series">
+            <div class="trend-series-header"><span class="dot ndvi"></span>平均NDVI <span id="trend-ndvi-last" class="trend-last">-</span></div>
+            <div class="trend-bars" id="trend-ndvi" aria-label="平均NDVIの推移"></div>
+            <svg class="trend-line" id="trend-ndvi-line" viewBox="0 0 120 80" role="img" aria-label="平均NDVIの折れ線"></svg>
+          </div>
+          <div class="trend-series">
+            <div class="trend-series-header"><span class="dot env"></span>環境 <span id="trend-env-last" class="trend-last">-</span></div>
+            <div class="trend-bars" id="trend-env" aria-label="環境スコアの推移"></div>
+            <svg class="trend-line" id="trend-env-line" viewBox="0 0 120 80" role="img" aria-label="環境スコアの折れ線"></svg>
+          </div>
+          <div class="trend-series">
+            <div class="trend-series-header"><span class="dot tech"></span>技術Pt <span id="trend-tech-last" class="trend-last">-</span></div>
+            <div class="trend-bars" id="trend-tech" aria-label="技術ポイントの推移"></div>
+            <svg class="trend-line" id="trend-tech-line" viewBox="0 0 120 80" role="img" aria-label="技術ポイントの折れ線"></svg>
+          </div>
+        </div>
+        <p class="trend-hint">直近のターンを表示（最大12件）</p>
+      </div>
     </div>
 
     <div class="panel">
@@ -99,6 +136,18 @@
       <div class="choice-row">
         <label for="crop-select">作物選択: </label>
         <select id="crop-select"></select>
+      </div>
+
+      <div class="preset-row">
+        <span class="muted">プリセット:</span>
+        <div class="preset-buttons">
+          <button type="button" id="preset-env" class="chip-button">環境重視</button>
+          <button type="button" id="preset-revenue" class="chip-button">収益重視</button>
+          <button type="button" id="preset-tech" class="chip-button">技術重視</button>
+          <button type="button" id="preset-custom-apply" class="chip-button chip-custom">カスタム適用</button>
+          <button type="button" id="preset-custom-save" class="chip-button chip-custom-outline">現在値を保存</button>
+        </div>
+        <div class="custom-preset-label" id="preset-custom-label">カスタム未設定</div>
       </div>
 
       <div class="slider-row">
@@ -165,6 +214,7 @@
       <p>総収入: <span id="final-food"></span></p>
       <p>最終環境スコア: <span id="final-env"></span></p>
       <p>最終技術レベル: <span id="final-tech"></span></p>
+      <p id="final-challenge" class="challenge-final"></p>
       <hr>
       <p>最終スコア: <strong id="final-score"></strong></p>
       <div class="modal-actions" style="margin-top: 16px;">

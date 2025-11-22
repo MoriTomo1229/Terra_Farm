@@ -20,6 +20,26 @@ const CROPS = {
 const ERAS = ['石器時代','青銅器時代','鉄器時代','中世','産業革命','近代','宇宙時代'];
 const TURN_COUNT = 10;
 const MAP_SIZE = 100;
+const CHALLENGES = {
+  free: {
+    key: 'free',
+    name: 'フリー',
+    description: '自由にプレイ',
+    goal: '目標なし'
+  },
+  env_guard: {
+    key: 'env_guard',
+    name: '環境キーパー',
+    description: '最終環境スコア80以上を目指す',
+    goal: '最終環境スコア80以上'
+  },
+  growth_drive: {
+    key: 'growth_drive',
+    name: '成長ドライブ',
+    description: '総収入を初期予算の1.8倍以上にする',
+    goal: '総収入を初期予算の1.8倍以上'
+  }
+};
 
 // ==================== ゲームバランス設定 ====================
 const GAME_CONFIG = {

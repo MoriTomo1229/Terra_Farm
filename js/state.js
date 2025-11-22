@@ -2,6 +2,8 @@
 let state = {
   countryKey: null,
   year: '01',
+  challenge: 'free',
+  challengeStatus: 'pending',
   turn: 0,
   budget: 0,
   initialBudget: 0,
@@ -9,6 +11,8 @@ let state = {
   envScore: 70,
   techPoints: 0,
   eraIndex: 0,
+  customPreset: null,
+  chartData: [],
   baseMapPotential: [],   // 初期NDVI（不変）
   currentMapNdvi: [],     // 現在NDVI（更新）
   avgNdvi: 0,

@@ -9,6 +9,10 @@ function getSelectedCountryKey() {
   return 'usa';
 }
 
+function getSelectedChallengeKey() {
+  return elements.challengeSelect?.value || 'free';
+}
+
 function parseBudgetInput(str) {
   if (!str) return null;
   str = str.trim().toUpperCase();
@@ -23,16 +27,17 @@ function parseBudgetInput(str) {
 function onStart() {
   const countryKey = getSelectedCountryKey();
   const year = elements.yearSelect.value;
+  const challengeKey = getSelectedChallengeKey();
   const parsedBudget = parseBudgetInput(elements.budgetInput.value);
   if (!parsedBudget || isNaN(parsedBudget) || parsedBudget <= 0) {
     elements.startError.textContent = '無効な予算です。例: 200B or 500M';
     return;
   }
   elements.startError.textContent = '';
-  startGame(countryKey, parsedBudget, year);
+  startGame(countryKey, parsedBudget, year, challengeKey);
 }
 
-async function startGame(countryKey, startingBudget, year) {
+async function startGame(countryKey, startingBudget, year, challengeKey) {
   elements.startButton.disabled = true;
   elements.startButton.textContent = '衛星データを読み込み中...';
   try {
@@ -49,6 +54,10 @@ async function startGame(countryKey, startingBudget, year) {
       envScore: 70,
       techPoints: 0,
       eraIndex: 0,
+      challenge: challengeKey,
+      challengeStatus: challengeKey === 'free' ? 'success' : 'pending',
+      customPreset: null,
+      chartData: [],
       baseMapPotential: scaledMapData,
       currentMapNdvi: JSON.parse(JSON.stringify(scaledMapData)),
       avgNdvi: 0,
@@ -66,8 +75,11 @@ async function startGame(countryKey, startingBudget, year) {
     const displayYear = parseInt(year,10) + 2000;
     elements.selectedCountry.innerHTML = `<span class="flag">${c.flag}</span> <strong>${c.name} (${displayYear}) — Skill: ${c.skill}</strong>`;
     elements.maxTurns.textContent = TURN_COUNT;
+    const challengeInfo = CHALLENGES[challengeKey] || CHALLENGES.free;
+    elements.challengeBadge.textContent = `チャレンジ: ${challengeInfo.name} — ${challengeInfo.goal}`;
+    updateChallengeProgressUI();
 
-    log(`ミッション開始: ${c.name} (${displayYear}年). 初期予算 ${formatUSD(state.budget)}.`);
+    log(`ミッション開始: ${c.name} (${displayYear}年). 初期予算 ${formatUSD(state.budget)}. チャレンジ: ${challengeInfo.name}.`);
     nextTurn();
 
   } catch (error) {
@@ -98,6 +110,14 @@ function endGame() {
   elements.finalFood.textContent = formatUSD(state.totalFoodValue);
   elements.finalEnv.textContent = state.envScore;
   elements.finalTech.textContent = ERAS[state.eraIndex];
+  finalizeChallengeOutcome();
+  const challengeInfo = CHALLENGES[state.challenge] || CHALLENGES.free;
+  if (state.challenge !== 'free') {
+    const statusText = state.challengeStatus === 'success' ? '達成！' : '未達成';
+    elements.finalChallenge.textContent = `チャレンジ「${challengeInfo.name}」: ${statusText} (${challengeInfo.goal})`;
+  } else {
+    elements.finalChallenge.textContent = '';
+  }
   const finalScore = Math.round(state.budget / C.budgetDivisor + state.envScore * C.envScoreMultiplier + state.eraIndex * C.eraMultiplier);
   elements.finalScore.textContent = finalScore;
   elements.gameOverModal.classList.remove('modal-hidden');
@@ -113,6 +133,11 @@ function attachListeners() {
   elements.executeButton.addEventListener('click', executeTurn);
   elements.autoAllocateButton.addEventListener('click', autoNormalize);
   elements.specialSkillButton.addEventListener('click', activateSkill);
+  if (elements.presetEnv) elements.presetEnv.addEventListener('click', () => applyPreset({fert:0.45, irri:0.35, tech:0.2}, '環境重視'));
+  if (elements.presetRevenue) elements.presetRevenue.addEventListener('click', () => applyPreset({fert:0.55, irri:0.25, tech:0.2}, '収益重視'));
+  if (elements.presetTech) elements.presetTech.addEventListener('click', () => applyPreset({fert:0.2, irri:0.25, tech:0.55}, '技術重視'));
+  if (elements.presetCustomApply) elements.presetCustomApply.addEventListener('click', applyCustomPreset);
+  if (elements.presetCustomSave) elements.presetCustomSave.addEventListener('click', saveCustomPreset);
   elements.replayButton.addEventListener('click', () => location.reload());
   elements.downloadLog.addEventListener('click', downloadHistory);
 }

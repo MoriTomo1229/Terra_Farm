@@ -67,6 +67,46 @@ function checkUnlocks() {
   return list;
 }
 
+function pushChartPoint(revenue) {
+  state.chartData.push({
+    turn: state.turn,
+    revenue,
+    avgNdvi: Number(state.avgNdvi.toFixed(3)),
+    envScore: state.envScore,
+    techPoints: state.techPoints
+  });
+  const MAX_POINTS = 12;
+  if (state.chartData.length > MAX_POINTS) state.chartData.shift();
+}
+
+function updateChallengeProgress() {
+  if (!state.challenge || state.challenge === 'free') {
+    state.challengeStatus = 'success';
+    return;
+  }
+  if (state.challengeStatus === 'success' || state.challengeStatus === 'failed') return;
+  if (state.challenge === 'env_guard' && state.envScore >= 80) {
+    state.challengeStatus = 'success';
+  } else if (state.challenge === 'growth_drive' && state.totalFoodValue >= state.initialBudget * 1.8) {
+    state.challengeStatus = 'success';
+  }
+}
+
+function finalizeChallengeOutcome() {
+  if (!state.challenge || state.challenge === 'free') {
+    state.challengeStatus = 'success';
+    return;
+  }
+  if (state.challengeStatus === 'success') return;
+  if (state.challenge === 'env_guard') {
+    state.challengeStatus = state.envScore >= 80 ? 'success' : 'failed';
+  } else if (state.challenge === 'growth_drive') {
+    state.challengeStatus = state.totalFoodValue >= state.initialBudget * 1.8 ? 'success' : 'failed';
+  } else {
+    state.challengeStatus = 'failed';
+  }
+}
+
 // ==================== ターン実行 ====================
 function executeTurn() {
   const fert = Number(elements.fertilizerSlider.value) || 0;
@@ -79,7 +119,8 @@ function executeTurn() {
   }
 
   const C = GAME_CONFIG;
-  const investmentNormalizer = Math.max(C.investment.minNormalizer, (country?.startingBudget || 1) * C.investment.normalizerRatio);
+  const baselineBudget = state.initialBudget || country?.startingBudget || 1;
+  const investmentNormalizer = Math.max(C.investment.minNormalizer, baselineBudget * C.investment.normalizerRatio);
   let fertShare = fert / investmentNormalizer;
   let irriShare = irri / investmentNormalizer;
   const techShare = tech / investmentNormalizer;
@@ -188,6 +229,8 @@ function executeTurn() {
   // 予算更新
   state.budget = Math.max(0, Math.round(state.budget - (fert + irri + tech) + revenue));
   state.totalFoodValue += revenue;
+  pushChartPoint(revenue);
+  updateChallengeProgress();
 
   const newUnlocks = checkUnlocks();
   state.history.push({
@@ -214,6 +257,8 @@ function executeTurn() {
     newUnlocks
   });
   if (typeof renderHistory === 'function') renderHistory();
+  if (typeof renderTrendChart === 'function') renderTrendChart();
+  if (typeof updateChallengeProgressUI === 'function') updateChallengeProgressUI();
 
   // 結果表示
   elements.turnResultText.textContent = `${crop.name}を${production.toLocaleString()}トン生産、収入: ${formatUSD(revenue)}`;

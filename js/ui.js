@@ -5,6 +5,7 @@ const elements = {
   countrySelectRadios: document.getElementsByName('country'),
   budgetInput: $('#budget-input'),
   yearSelect: $('#year-select'),
+  challengeSelect: $('#challenge-select'),
   startButton: $('#start-button'),
   startError: $('#start-error'),
 
@@ -12,6 +13,7 @@ const elements = {
 
   header: $('#main-header'),
   selectedCountry: $('#selected-country'),
+  challengeBadge: $('#challenge-badge'),
   gameContainer: $('#game-container'),
 
   turnCounter: $('#turn-counter'),
@@ -21,6 +23,7 @@ const elements = {
   envScoreValue: $('#env-score-value'),
   eraValue: $('#era-value'),
   techPointsValue: $('#tech-points-value'),
+  challengeProgress: $('#challenge-progress'),
   cropValue: $('#crop-value'),
 
   ndviValue: $('#ndvi-value'),
@@ -41,6 +44,12 @@ const elements = {
   executeButton: $('#execute-turn-button'),
   autoAllocateButton: $('#auto-allocate-button'),
   specialSkillButton: $('#special-skill'),
+  presetEnv: $('#preset-env'),
+  presetRevenue: $('#preset-revenue'),
+  presetTech: $('#preset-tech'),
+  presetCustomApply: $('#preset-custom-apply'),
+  presetCustomSave: $('#preset-custom-save'),
+  presetCustomLabel: $('#preset-custom-label'),
 
   turnResultText: $('#turn-result-text'),
   eventText: $('#event-text'),
@@ -49,10 +58,24 @@ const elements = {
   historyPanel: $('#history-panel'),
   historyBody: $('#history-body'),
 
+  trendRevenue: $('#trend-revenue'),
+  trendNdvi: $('#trend-ndvi'),
+  trendEnv: $('#trend-env'),
+  trendTech: $('#trend-tech'),
+  trendRevenueLast: $('#trend-revenue-last'),
+  trendNdviLast: $('#trend-ndvi-last'),
+  trendEnvLast: $('#trend-env-last'),
+  trendTechLast: $('#trend-tech-last'),
+  trendRevenueLine: $('#trend-revenue-line'),
+  trendNdviLine: $('#trend-ndvi-line'),
+  trendEnvLine: $('#trend-env-line'),
+  trendTechLine: $('#trend-tech-line'),
+
   gameOverModal: $('#game-over-modal'),
   finalFood: $('#final-food'),
   finalEnv: $('#final-env'),
   finalTech: $('#final-tech'),
+  finalChallenge: $('#final-challenge'),
   finalScore: $('#final-score'),
   replayButton: $('#replay-button'),
   downloadLog: $('#download-log'),
@@ -103,8 +126,11 @@ function renderUI() {
   elements.moistureValue.textContent = state.soilMoisture;
   elements.precipitationValue.textContent = state.precipitation;
   elements.temperatureValue.textContent = state.temperature;
+  updateChallengeProgressUI();
   renderMap();
   renderHistory();
+  renderTrendChart();
+  updateCustomPresetLabel();
   updateRemainingBudget();
 }
 
@@ -204,6 +230,153 @@ function updateSliderVisual(slider){
   slider.style.setProperty('--percent', `${p}%`);
 }
 
+function applyPreset(ratios, label){
+  const budget = state.budget;
+  if (!budget) return;
+  const fert = Math.round(budget * ratios.fert);
+  const irri = Math.round(budget * ratios.irri);
+  const tech = Math.max(0, budget - fert - irri);
+  elements.fertilizerSlider.value = fert;
+  elements.irrigationSlider.value = irri;
+  elements.techSlider.value = tech;
+  updateRemainingBudget();
+  updateSliderVisual(elements.fertilizerSlider);
+  updateSliderVisual(elements.irrigationSlider);
+  updateSliderVisual(elements.techSlider);
+  log(`プリセット適用: ${label}`);
+}
+
+function saveCustomPreset() {
+  const fert = Number(elements.fertilizerSlider.value) || 0;
+  const irri = Number(elements.irrigationSlider.value) || 0;
+  const tech = Number(elements.techSlider.value) || 0;
+  const sum = fert + irri + tech;
+  if (sum <= 0) {
+    log('カスタム保存失敗: スライダーがゼロのため保存できません。');
+    return;
+  }
+  state.customPreset = {
+    fertRatio: fert / sum,
+    irriRatio: irri / sum,
+    techRatio: tech / sum
+  };
+  updateCustomPresetLabel();
+  log('カスタムプリセットを保存しました。');
+}
+
+function applyCustomPreset() {
+  if (!state.customPreset) {
+    log('カスタムプリセットが未設定です。');
+    return;
+  }
+  const { fertRatio, irriRatio, techRatio } = state.customPreset;
+  applyPreset({ fert: fertRatio, irri: irriRatio, tech: techRatio }, 'カスタム');
+}
+
+function updateCustomPresetLabel() {
+  const label = elements.presetCustomLabel;
+  if (!label) return;
+  if (!state.customPreset) {
+    label.textContent = 'カスタム未設定';
+    return;
+  }
+  const { fertRatio, irriRatio, techRatio } = state.customPreset;
+  label.textContent = `カスタム: 肥${Math.round(fertRatio * 100)}% / 灌${Math.round(irriRatio * 100)}% / 技${Math.round(techRatio * 100)}%`;
+}
+
+function updateChallengeProgressUI() {
+  const info = CHALLENGES[state.challenge] || CHALLENGES.free;
+  if (elements.challengeBadge) {
+    elements.challengeBadge.textContent = `チャレンジ: ${info.name} — ${info.goal}`;
+  }
+  if (!elements.challengeProgress) return;
+  const chip = elements.challengeProgress;
+  chip.classList.remove('chip-success','chip-failed','chip-pending','chip-neutral');
+  let text = '進行中';
+  if (state.challenge === 'free') {
+    chip.classList.add('chip-neutral');
+    text = 'フリー';
+  } else if (state.challengeStatus === 'success') {
+    chip.classList.add('chip-success');
+    text = '達成';
+  } else if (state.challengeStatus === 'failed') {
+    chip.classList.add('chip-failed');
+    text = '未達成';
+  } else {
+    chip.classList.add('chip-pending');
+  }
+  chip.textContent = `${info.name}: ${text}`;
+}
+
+function renderTrendBars(el, values, colorClass, formatter) {
+  if (!el) return;
+  el.innerHTML = '';
+  if (!values.length) {
+    const empty = document.createElement('div');
+    empty.className = 'trend-empty';
+    empty.textContent = 'データなし';
+    el.appendChild(empty);
+    return;
+  }
+  const max = Math.max(...values.map(v => Math.abs(v)), 1);
+  values.forEach(v => {
+    const bar = document.createElement('div');
+    const h = Math.max(6, (Math.abs(v)/max) * 80);
+    bar.className = `trend-bar ${colorClass}`;
+    bar.style.height = `${h}px`;
+    bar.title = formatter(v);
+    el.appendChild(bar);
+  });
+}
+
+function renderTrendChart() {
+  const points = state.chartData || [];
+  const last = points[points.length - 1] || {};
+  const revenueVals = points.map(p => p.revenue || 0);
+  const ndviVals = points.map(p => p.avgNdvi || 0);
+  const envVals = points.map(p => p.envScore || 0);
+  const techVals = points.map(p => p.techPoints || 0);
+  renderTrendBars(elements.trendRevenue, revenueVals, 'bar-revenue', formatUSD);
+  renderTrendBars(elements.trendNdvi, ndviVals, 'bar-ndvi', v => v.toFixed(3));
+  renderTrendBars(elements.trendEnv, envVals, 'bar-env', v => v.toFixed(0));
+  renderTrendBars(elements.trendTech, techVals, 'bar-tech', v => v.toLocaleString());
+  renderTrendLine(elements.trendRevenueLine, revenueVals, 'line-revenue', 'dot-revenue');
+  renderTrendLine(elements.trendNdviLine, ndviVals, 'line-ndvi', 'dot-ndvi');
+  renderTrendLine(elements.trendEnvLine, envVals, 'line-env', 'dot-env');
+  renderTrendLine(elements.trendTechLine, techVals, 'line-tech', 'dot-tech');
+  if (elements.trendRevenueLast) elements.trendRevenueLast.textContent = last.revenue ? formatUSD(last.revenue) : '-';
+  if (elements.trendNdviLast) elements.trendNdviLast.textContent = last.avgNdvi ? last.avgNdvi.toFixed(3) : '-';
+  if (elements.trendEnvLast) elements.trendEnvLast.textContent = Number.isFinite(last.envScore) ? last.envScore : '-';
+  if (elements.trendTechLast) elements.trendTechLast.textContent = Number.isFinite(last.techPoints) ? last.techPoints.toLocaleString() : '-';
+}
+
+function renderTrendLine(svgEl, values, lineClass, dotClass) {
+  if (!svgEl) return;
+  svgEl.innerHTML = '';
+  if (!values.length) return;
+  const width = 120, height = 80, pad = 6;
+  const max = Math.max(...values.map(v => Math.abs(v)), 1);
+  const step = values.length > 1 ? (width - pad * 2) / (values.length - 1) : 0;
+  const points = values.map((v, i) => {
+    const x = pad + step * i;
+    const y = height - pad - (Math.abs(v) / max) * (height - pad * 2);
+    return { x, y };
+  });
+  const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+  const ns = 'http://www.w3.org/2000/svg';
+  const path = document.createElementNS(ns, 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('class', `trend-line-path ${lineClass}`);
+  svgEl.appendChild(path);
+  const last = points[points.length - 1];
+  const circle = document.createElementNS(ns, 'circle');
+  circle.setAttribute('cx', last.x.toFixed(2));
+  circle.setAttribute('cy', last.y.toFixed(2));
+  circle.setAttribute('r', 3.5);
+  circle.setAttribute('class', `trend-line-dot ${dotClass}`);
+  svgEl.appendChild(circle);
+}
+
 function addToMiniGraph(value){
   const bar = document.createElement('div');
   bar.style.width = '10px';
@@ -215,6 +388,7 @@ function addToMiniGraph(value){
 
 function downloadHistory() {
   const country = COUNTRIES[state.countryKey] || {};
+  const challengeInfo = CHALLENGES[state.challenge] || CHALLENGES.free;
   const payload = {
     meta: {
       countryKey: state.countryKey,
@@ -225,9 +399,16 @@ function downloadHistory() {
       turnsPlayed: state.history.length,
       turnLimit: TURN_COUNT,
       totalFoodValue: state.totalFoodValue,
-      skillUsed: state.skillUsed
+      skillUsed: state.skillUsed,
+      challenge: {
+        key: state.challenge,
+        name: challengeInfo.name,
+        goal: challengeInfo.goal,
+        status: state.challengeStatus
+      }
     },
-    turns: state.history
+    turns: state.history,
+    chartData: state.chartData
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
