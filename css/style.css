@@ -37,6 +37,8 @@ body {
 .flag { font-size: 20px; }
 .budget-input, .year-select { margin: 10px 0; }
 .budget-input input, .year-select select { padding: 8px; border-radius: 6px; border: none; width: 200px; }
+.challenge-select { margin: 10px 0; }
+.challenge-select select { padding: 8px; border-radius: 6px; border: none; min-width: 220px; }
 .start-actions { margin-top: 12px; }
 .start-actions button { background: linear-gradient(90deg,#ff7e5f,#feb47b,#ff6a00); border: none; padding: 10px 14px; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; }
 
@@ -61,6 +63,15 @@ body {
 .logo-small { height: 42px; margin-left: 8px; }
 .title-block { display: flex; flex-direction: column; align-items: flex-start; }
 .selected-country { font-size: 20px; margin-top: 4px; }
+.challenge-badge {
+  font-size: 0.95rem;
+  color: #c5f2ff;
+  background: rgba(0,255,255,0.06);
+  border: 1px solid rgba(0,255,255,0.15);
+  padding: 6px 10px;
+  border-radius: 8px;
+  margin-top: 4px;
+}
 
 /* ゲームレイアウト */
 #game-container { display: none; grid-template-columns: 1fr 340px 380px; gap: 12px; margin-top: 8px; }
@@ -113,6 +124,21 @@ button { background: linear-gradient(90deg,#1e90ff,#00bfff); border: none; paddi
 button:hover { filter: brightness(1.15); transform: translateY(-1px); }
 button.accent { background: linear-gradient(90deg,#8a2be2,#da70d6); }
 
+.preset-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 6px 0 2px; }
+.preset-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip-button {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #e3f6ff;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+.chip-button:hover { filter: brightness(1.1); }
+.chip-custom { background: rgba(0,188,212,0.12); border-color: rgba(0,188,212,0.35); }
+.chip-custom-outline { background: transparent; border-color: rgba(255,255,255,0.25); color: #cde9ff; }
+.custom-preset-label { font-size: 0.9rem; color: #cde9ff; margin-top: 4px; }
+
 /* 小パネル */
 .small-panel { margin-top: 10px; }
 #unlock-list { margin: 6px 0 0; padding-left: 18px; }
@@ -134,6 +160,51 @@ button.accent { background: linear-gradient(90deg,#8a2be2,#da70d6); }
 .modal-visible { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; animation: appear 0.9s ease; }
 .modal-content { width: min(760px, 96%); text-align: center; padding: 18px; border-radius: 12px; background: linear-gradient(180deg,#20101a,#0b0510); }
 @keyframes appear { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.challenge-final { color: #c5f2ff; margin: 4px 0; }
+
+.challenge-progress-row { margin-top: 4px; }
+.chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.chip-pending { background: rgba(255,255,255,0.08); color: #ffe29f; border: 1px solid rgba(255,255,255,0.12); }
+.chip-success { background: rgba(46,204,113,0.15); color: #a8ffcf; border: 1px solid rgba(46,204,113,0.35); }
+.chip-failed { background: rgba(255,99,132,0.15); color: #ffc2c2; border: 1px solid rgba(255,99,132,0.35); }
+.chip-neutral { background: rgba(0,188,212,0.12); color: #b4f1ff; border: 1px solid rgba(0,188,212,0.28); }
+
+/* トレンドチャート */
+#trend-chart h4 { margin: 0 0 6px; }
+.trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 8px; }
+.trend-series { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 6px; position: relative; }
+.trend-series-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #eaf5ff; font-size: 0.95rem; }
+.trend-bars { display: flex; align-items: flex-end; gap: 4px; min-height: 86px; margin-top: 4px; position: relative; z-index: 1; }
+.trend-bar { width: 10px; border-radius: 3px 3px 0 0; }
+.bar-revenue { background: linear-gradient(180deg,#ffd166,#ff9f1c); }
+.bar-ndvi { background: linear-gradient(180deg,#a0e9ff,#5cb85c); }
+.bar-env { background: linear-gradient(180deg,#c2ffad,#7bed9f); }
+.bar-tech { background: linear-gradient(180deg,#d4b5ff,#7c5cff); }
+.trend-last { color: #c5f2ff; font-size: 0.85rem; }
+.trend-empty { color: #9fb8d1; font-size: 0.85rem; }
+.trend-hint { margin: 6px 0 0; font-size: 0.85rem; color: #9fb8d1; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.dot.revenue { background: #ffae00; }
+.dot.ndvi { background: #5cb85c; }
+.dot.env { background: #7bed9f; }
+.dot.tech { background: #7c5cff; }
+.trend-line { position: absolute; inset: 32px 6px 6px 6px; width: calc(100% - 12px); height: 80px; pointer-events: none; z-index: 2; }
+.trend-line-path { fill: none; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; opacity: 0.9; }
+.trend-line-dot { stroke: rgba(0,0,0,0.4); stroke-width: 1; }
+.line-revenue { stroke: #ffae00; }
+.line-ndvi { stroke: #5cb85c; }
+.line-env { stroke: #7bed9f; }
+.line-tech { stroke: #7c5cff; }
+.dot-revenue { fill: #ffae00; }
+.dot-ndvi { fill: #5cb85c; }
+.dot-env { fill: #7bed9f; }
+.dot-tech { fill: #7c5cff; }
 
 /* レスポンシブ対応 */
 @media (max-width: 1200px) {
