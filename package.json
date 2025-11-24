@@ -4,7 +4,7 @@
   "description": "Terra Farmは、国家の農業政策を運営し、食料生産と環境の持続可能性のバランスを目指す戦略シミュレーションゲームです。プレイヤーは国を選択し、限られた予算内で作物、肥料、灌漑、技術に投資し、ターンごとに変化する状況に対応しながら高スコアを目指します。",
   "main": "index.js",
   "scripts": {
-    "dev": "http-server -p 8080",
+    "dev": "PORT=${PORT:-8080} http-server -a 0.0.0.0 -p $PORT",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
