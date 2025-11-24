@@ -34,6 +34,23 @@ npm install          # 初回のみ（http-serverを取得）
 npm run dev          # http://127.0.0.1:8080 で起動
 ```
 
+### Dockerでの実行
+
+Nodeをローカルに入れなくても、Dockerと`docker-compose`（ハイフン区切りのCLI）で起動できます。
+
+```bash
+# イメージをビルド
+docker-compose build
+
+# 起動（デフォルトはポート8080。別ポートにしたい場合は PORT=8081 などを指定）
+PORT=8080 docker-compose up -d
+
+# 停止
+docker-compose down
+```
+
+起動後、ブラウザで `http://localhost:8080/` を開くとゲームが表示されます（`PORT` を変えた場合はそのポート番号）。
+
 ## 遊び方
 
 特別なビルドやサーバー環境は不要です。
