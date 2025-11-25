@@ -15,7 +15,8 @@ Enable Terra Farm to run entirely inside Docker so contributors and players can 
 
 ## Surprises & Discoveries
 
-- None yet; record any unexpected behavior while building or running the container.
+- Observation: `docker-compose` warns that the `version` field is obsolete; removed the `version` key from `docker-compose.yml`.
+  Evidence: `WARN[0000] ... docker-compose.yml: the attribute version is obsolete, it will be ignored`.
 
 ## Decision Log
 
@@ -90,3 +91,4 @@ Expected command outputs for reference:
 
 Plan update note (2025-11-24 23:48Z): Initial ExecPlan drafted to guide Dockerization work and capture baseline decisions.
 Plan update note (2025-11-24 23:52Z): Recorded progress after adding Docker artifacts, compose wiring, and documentation updates; validation is still outstanding.
+Plan update note (2025-11-24 23:55Z): Captured compose `version` warning and removed the key from `docker-compose.yml` to align with current docker-compose guidance.
