@@ -17,6 +17,8 @@ const elements = {
   gameContainer: $('#game-container'),
 
   turnCounter: $('#turn-counter'),
+  seasonCounter: $('#season-counter'),
+  maxSeasons: $('#max-seasons'),
   maxTurns: $('#max-turns'),
   budgetValue: $('#budget-value'),
   totalFoodValue: $('#total-food-value'),
@@ -24,7 +26,15 @@ const elements = {
   eraValue: $('#era-value'),
   techPointsValue: $('#tech-points-value'),
   challengeProgress: $('#challenge-progress'),
+  challengeProgressBar: $('#challenge-progress-bar'),
+  challengeProgressList: $('#challenge-progress-list'),
   cropValue: $('#crop-value'),
+
+  forecastPanel: $('#forecast-panel'),
+  forecastRisk: $('#forecast-risk'),
+  forecastNextMoisture: $('#forecast-next-moisture'),
+  forecastNextPrecip: $('#forecast-next-precip'),
+  forecastNextTemp: $('#forecast-next-temp'),
 
   ndviValue: $('#ndvi-value'),
   moistureValue: $('#moisture-value'),
@@ -79,7 +89,14 @@ const elements = {
   finalScore: $('#final-score'),
   replayButton: $('#replay-button'),
   downloadLog: $('#download-log'),
-  unlockList: $('#unlock-list')
+  unlockList: $('#unlock-list'),
+
+  techTreeList: $('#tech-tree-list'),
+  skillTierBadge: $('#skill-tier-badge'),
+
+  onboardingModal: $('#onboarding-modal'),
+  onboardingOpenButtons: document.querySelectorAll('[data-open-onboarding]'),
+  onboardingClose: $('#onboarding-close')
 };
 
 // ==================== UI描画 & ヘルパー ====================
@@ -115,7 +132,8 @@ function pushUnlock(text) {
 }
 
 function renderUI() {
-  elements.turnCounter.textContent = state.turn;
+  elements.turnCounter.textContent = state.seasonTurn || state.turn;
+  if (elements.seasonCounter) elements.seasonCounter.textContent = state.season;
   elements.budgetValue.textContent = formatUSD(state.budget);
   elements.totalFoodValue.textContent = formatUSD(state.totalFoodValue);
   elements.envScoreValue.textContent = state.envScore;
@@ -126,6 +144,8 @@ function renderUI() {
   elements.moistureValue.textContent = state.soilMoisture;
   elements.precipitationValue.textContent = state.precipitation;
   elements.temperatureValue.textContent = state.temperature;
+  renderForecast();
+  renderTechPanel();
   updateChallengeProgressUI();
   renderMap();
   renderHistory();
@@ -306,6 +326,27 @@ function updateChallengeProgressUI() {
     chip.classList.add('chip-pending');
   }
   chip.textContent = `${info.name}: ${text}`;
+
+  const progress = state.challengeProgress || { completed: 0, total: 0, details: [] };
+  if (elements.challengeProgressBar) {
+    const pct = progress.total ? Math.round((progress.completed / progress.total) * 100) : 100;
+    elements.challengeProgressBar.style.width = `${pct}%`;
+    elements.challengeProgressBar.textContent = `${pct}%`;
+  }
+  if (elements.challengeProgressList) {
+    elements.challengeProgressList.innerHTML = '';
+    if (!progress.details || !progress.details.length) {
+      const li = document.createElement('li');
+      li.textContent = '条件なし / フリープレイ';
+      elements.challengeProgressList.appendChild(li);
+    } else {
+      progress.details.forEach(d => {
+        const li = document.createElement('li');
+        li.textContent = `${d.met ? '✅' : '⏳'} ${d.label}`;
+        elements.challengeProgressList.appendChild(li);
+      });
+    }
+  }
 }
 
 function renderTrendBars(el, values, colorClass, formatter) {
@@ -397,7 +438,8 @@ function downloadHistory() {
       startingBudget: state.initialBudget,
       remainingBudget: state.budget,
       turnsPlayed: state.history.length,
-      turnLimit: TURN_COUNT,
+      turnLimit: CAMPAIGN.seasonTurnLimit,
+      seasonLimit: CAMPAIGN.seasons,
       totalFoodValue: state.totalFoodValue,
       skillUsed: state.skillUsed,
       challenge: {
@@ -405,6 +447,10 @@ function downloadHistory() {
         name: challengeInfo.name,
         goal: challengeInfo.goal,
         status: state.challengeStatus
+      },
+      campaign: {
+        season: state.season,
+        description: CAMPAIGN.description
       }
     },
     turns: state.history,
@@ -441,17 +487,59 @@ function renderHistory() {
   recent.forEach(entry => {
     const row = document.createElement('tr');
     const alloc = `肥:${formatUSD(entry.allocations.fertilizer)} / 灌:${formatUSD(entry.allocations.irrigation)} / 技:${formatUSD(entry.allocations.tech)}`;
-    [
-      entry.turn,
+    const turnLabel = entry.season ? `S${entry.season}-T${entry.turnInSeason || entry.turn}` : entry.turn;
+    const cells = [
+      turnLabel,
       alloc,
       entry.avgNdvi.toFixed(3),
       formatUSD(entry.revenue),
       entry.envScore
-    ].forEach(value => {
+    ];
+    cells.forEach(value => {
       const cell = document.createElement('td');
       cell.textContent = value;
       row.appendChild(cell);
     });
     elements.historyBody.appendChild(row);
   });
+}
+
+function renderForecast() {
+  if (!state.forecast || !state.forecast.next) return;
+  if (elements.forecastNextMoisture) elements.forecastNextMoisture.textContent = state.forecast.next.soilMoisture;
+  if (elements.forecastNextPrecip) elements.forecastNextPrecip.textContent = state.forecast.next.precipitation;
+  if (elements.forecastNextTemp) elements.forecastNextTemp.textContent = state.forecast.next.temperature;
+  if (elements.forecastRisk) {
+    elements.forecastRisk.innerHTML = '';
+    state.forecast.riskNotes.forEach(note => {
+      const li = document.createElement('li');
+      li.textContent = note;
+      elements.forecastRisk.appendChild(li);
+    });
+  }
+}
+
+function renderTechPanel() {
+  const techList = elements.techTreeList;
+  if (!techList) return;
+  techList.innerHTML = '';
+  const nodes = GAME_CONFIG.technology.techTree || [];
+  nodes.forEach(node => {
+    const li = document.createElement('li');
+    const unlocked = !!state.unlockedTechNodes[node.id];
+    li.className = unlocked ? 'tech-unlocked' : 'tech-locked';
+    li.textContent = `${node.name} (${node.required}pt) — ${node.description}`;
+    techList.appendChild(li);
+  });
+  if (elements.skillTierBadge) {
+    elements.skillTierBadge.textContent = `Skill Tier ${state.skillTier || 1}`;
+  }
+}
+
+function openOnboarding() {
+  if (elements.onboardingModal) elements.onboardingModal.classList.add('modal-visible');
+}
+
+function closeOnboarding() {
+  if (elements.onboardingModal) elements.onboardingModal.classList.remove('modal-visible');
 }

@@ -50,11 +50,15 @@
         <option value="free">フリー（目標なし）</option>
         <option value="env_guard">環境キーパー（最終環境スコア80以上）</option>
         <option value="growth_drive">成長ドライブ（総収入を初期予算の1.8倍以上）</option>
+        <option value="tech_race">技術覇者（技術1800以上）</option>
+        <option value="balanced_growth">均衡成長（環境75+ & 総収入1.4x）</option>
+        <option value="ndvi_keeper">緑の守り手（平均NDVI0.60+）</option>
       </select>
     </div>
 
     <div class="start-actions">
       <button id="start-button" aria-label="ミッション開始">ミッション開始</button>
+      <button type="button" class="ghost" data-open-onboarding>遊び方を見る</button>
     </div>
     <div id="start-error" class="warning" role="alert"></div>
   </div>
@@ -74,6 +78,7 @@
 
   <main id="game-container" class="panel" role="main" style="background:none; box-shadow:none; border:none;">
     <div id="status-display" class="panel">
+      <p>シーズン: <strong><span id="season-counter">1</span>/<span id="max-seasons">2</span></strong></p>
       <p>ターン: <strong><span id="turn-counter">0</span>/<span id="max-turns">10</span></strong></p>
       <p>予算: <strong id="budget-value">$0</strong></p>
       <p>総収入: <strong id="total-food-value">$0</strong></p>
@@ -81,6 +86,8 @@
       <p>時代: <strong id="era-value">-</strong></p>
       <p>技術ポイント: <strong id="tech-points-value">0</strong></p>
       <p class="challenge-progress-row">チャレンジ進行度: <span id="challenge-progress" class="chip chip-pending">-</span></p>
+      <div class="progress-shell"><span id="challenge-progress-bar"></span></div>
+      <ul id="challenge-progress-list" class="challenge-list"></ul>
       <p>作物: <strong id="crop-value">-</strong></p>
 
       <hr>
@@ -88,6 +95,22 @@
       <p>土壌水分: <strong id="moisture-value">0</strong></p>
       <p>降水量: <strong id="precipitation-value">0</strong></p>
       <p>気温: <strong id="temperature-value">0</strong> ℃</p>
+
+      <div id="forecast-panel" class="small-panel panel">
+        <h4>天候ダッシュボード</h4>
+        <div class="forecast-grid">
+          <div>
+            <p class="muted">次ターン予報</p>
+            <p>土壌水分: <strong id="forecast-next-moisture">-</strong></p>
+            <p>降水量: <strong id="forecast-next-precip">-</strong></p>
+            <p>気温: <strong id="forecast-next-temp">-</strong> ℃</p>
+          </div>
+          <div>
+            <p class="muted">イベントリスク</p>
+            <ul id="forecast-risk" class="forecast-risk"></ul>
+          </div>
+        </div>
+      </div>
 
       <div class="legend">
         <span class="legend-box p1"></span>貧弱
@@ -172,11 +195,18 @@
         <button id="execute-turn-button">ターンを実行</button>
         <button id="auto-allocate-button" class="accent">自動配分</button>
         <button id="special-skill">国家スキル</button>
+        <button type="button" class="ghost" data-open-onboarding>ヘルプ</button>
       </div>
 
       <div class="small-panel panel">
         <h4>アンロック</h4>
         <ul id="unlock-list"></ul>
+      </div>
+
+      <div class="small-panel panel" id="tech-panel">
+        <h4>技術ツリー & スキル</h4>
+        <p id="skill-tier-badge" class="chip chip-neutral">Skill Tier 1</p>
+        <ul id="tech-tree-list" class="tech-tree"></ul>
       </div>
     </div>
 
@@ -192,7 +222,7 @@
           <table class="history-table" aria-label="ターン履歴の表">
             <thead>
               <tr>
-                <th scope="col">ターン</th>
+                <th scope="col">ターン/季</th>
                 <th scope="col">配分</th>
                 <th scope="col">NDVI</th>
                 <th scope="col">収入</th>
@@ -221,6 +251,20 @@
         <button id="replay-button">もう一度プレイ</button>
         <button id="download-log">ログをダウンロード</button>
       </div>
+    </div>
+  </div>
+
+  <div id="onboarding-modal" class="modal-hidden" role="dialog" aria-modal="true">
+    <div class="modal-content panel">
+      <button id="onboarding-close" class="close-btn" aria-label="閉じる">×</button>
+      <h2>Terra Farm ガイド</h2>
+      <ol class="onboarding-steps">
+        <li>国とチャレンジを選び、初期予算を入力します。例: 200B。</li>
+        <li>スライダーで肥料・灌漑・技術投資を配分し「ターンを実行」。自動配分も利用できます。</li>
+        <li>天候ダッシュボードで次ターン予報を確認し、干ばつや熱波に備えて配分を調整します。</li>
+        <li>チャレンジの進捗バーと技術ツリーを見て、長期的な成長と環境保全のバランスをとりましょう。</li>
+        <li>ログをダウンロードすればプレイ履歴を振り返りできます。シーズンボーナスも活用してください。</li>
+      </ol>
     </div>
   </div>
 

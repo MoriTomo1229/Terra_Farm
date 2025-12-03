@@ -19,6 +19,12 @@ const CROPS = {
 
 const ERAS = ['石器時代','青銅器時代','鉄器時代','中世','産業革命','近代','宇宙時代'];
 const TURN_COUNT = 10;
+const CAMPAIGN = {
+  seasons: 2,
+  seasonTurnLimit: TURN_COUNT,
+  carryBonusRatio: 0.08,
+  description: '2シーズン制で年度末に少額の予算ボーナスを付与'
+};
 const MAP_SIZE = 100;
 const CHALLENGES = {
   free: {
@@ -31,13 +37,36 @@ const CHALLENGES = {
     key: 'env_guard',
     name: '環境キーパー',
     description: '最終環境スコア80以上を目指す',
-    goal: '最終環境スコア80以上'
+    goal: '最終環境スコア80以上',
+    conditions: { envScore: 80 }
   },
   growth_drive: {
     key: 'growth_drive',
     name: '成長ドライブ',
     description: '総収入を初期予算の1.8倍以上にする',
-    goal: '総収入を初期予算の1.8倍以上'
+    goal: '総収入を初期予算の1.8倍以上',
+    conditions: { revenueMultiplier: 1.8 }
+  },
+  tech_race: {
+    key: 'tech_race',
+    name: '技術覇者',
+    description: '技術ポイントを1800以上に到達させる',
+    goal: '技術ポイント1800以上',
+    conditions: { techPoints: 1800 }
+  },
+  balanced_growth: {
+    key: 'balanced_growth',
+    name: '均衡成長',
+    description: '環境75以上を維持しつつ総収入を初期予算の1.4倍に',
+    goal: '環境75+ & 総収入1.4x',
+    conditions: { envScore: 75, revenueMultiplier: 1.4 }
+  },
+  ndvi_keeper: {
+    key: 'ndvi_keeper',
+    name: '緑の守り手',
+    description: '平均NDVI0.60以上を達成',
+    goal: '平均NDVI0.60+',
+    conditions: { avgNdvi: 0.6 }
   }
 };
 
@@ -139,6 +168,29 @@ const GAME_CONFIG = {
       ecoFertilizer: 300,
       precisionAg: 1200,
       orbitalNet: 2500,
+      climateShield: 1400,
+      aiAdvisors: 1900
+    },
+    techTree: [
+      { id: 'soilSensors', name: '土壌センサー網', required: 600, effect: { envBonus: 2 }, description: 'ターン終了時に環境+2' },
+      { id: 'smartIrrigation', name: 'スマート灌漑', required: 900, effect: { irrigationBoost: 0.1 }, description: '灌漑効率をわずかに強化' },
+      { id: 'bioFuels', name: 'バイオ燃料', required: 1600, effect: { productionMultiplier: 1.05 }, description: '生産量+5%' },
+      { id: 'climateShield', name: '気候シールド', required: 1800, effect: { envLossReduction: 0.15 }, description: '環境悪化を軽減' },
+      { id: 'aiAdvisors', name: 'AIアドバイザー', required: 2200, effect: { revenueMultiplier: 1.05 }, description: '収益+5%' }
+    ],
+    skillTiers: {
+      default: [
+        { threshold: 700, production: 1.03 },
+        { threshold: 1500, production: 1.06 }
+      ],
+      egypt: [
+        { threshold: 500, irrigation: 0.08 },
+        { threshold: 1200, irrigation: 0.12 }
+      ],
+      china: [
+        { threshold: 800, production: 1.04 },
+        { threshold: 1600, production: 1.08 }
+      ]
     },
     eraThresholds: [0, 50, 120, 240, 500, 1200, 2500],
   },
@@ -146,6 +198,12 @@ const GAME_CONFIG = {
     budgetDivisor: 1e6,
     envScoreMultiplier: 100,
     eraMultiplier: 1000,
+  },
+  forecast: {
+    moistureSwing: 15,
+    precipSwing: 18,
+    tempSwing: 6,
+    baseRisks: { drought: 0.28, heatwave: 0.2, rain: 0.22 }
   },
   fallbackMap: {
     landMask: { dx: 55, dy: 45 },

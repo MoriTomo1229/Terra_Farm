@@ -48,6 +48,8 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
       ...state,
       countryKey, year,
       turn: 0,
+      season: 1,
+      seasonTurn: 0,
       budget: startingBudget,
       initialBudget: startingBudget,
       totalFoodValue: 0,
@@ -56,14 +58,18 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
       eraIndex: 0,
       challenge: challengeKey,
       challengeStatus: challengeKey === 'free' ? 'success' : 'pending',
+      challengeProgress: { completed: 0, total: 1, details: [] },
       customPreset: null,
       chartData: [],
       baseMapPotential: scaledMapData,
       currentMapNdvi: JSON.parse(JSON.stringify(scaledMapData)),
       avgNdvi: 0,
+      forecast: { next: null, riskNotes: [] },
       history: [],
       unlocked: {},
-      skillUsed: false
+      unlockedTechNodes: {},
+      skillUsed: false,
+      skillTier: 1
     };
 
     const c = COUNTRIES[countryKey];
@@ -74,9 +80,11 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
     elements.gameContainer.style.display = 'grid';
     const displayYear = parseInt(year,10) + 2000;
     elements.selectedCountry.innerHTML = `<span class="flag">${c.flag}</span> <strong>${c.name} (${displayYear}) — Skill: ${c.skill}</strong>`;
-    elements.maxTurns.textContent = TURN_COUNT;
+    elements.maxTurns.textContent = `${CAMPAIGN.seasonTurnLimit} x${CAMPAIGN.seasons}`;
+    if (elements.maxSeasons) elements.maxSeasons.textContent = CAMPAIGN.seasons;
     const challengeInfo = CHALLENGES[challengeKey] || CHALLENGES.free;
     elements.challengeBadge.textContent = `チャレンジ: ${challengeInfo.name} — ${challengeInfo.goal}`;
+    evaluateChallengeConditions();
     updateChallengeProgressUI();
 
     log(`ミッション開始: ${c.name} (${displayYear}年). 初期予算 ${formatUSD(state.budget)}. チャレンジ: ${challengeInfo.name}.`);
@@ -93,15 +101,25 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
 
 function nextTurn() {
   state.turn++;
-  if (state.turn > TURN_COUNT) {
-    endGame();
-    return;
+  state.seasonTurn++;
+  if (state.seasonTurn > CAMPAIGN.seasonTurnLimit) {
+    if (state.season < CAMPAIGN.seasons) {
+      const bonus = Math.round(state.initialBudget * CAMPAIGN.carryBonusRatio);
+      state.season += 1;
+      state.seasonTurn = 1;
+      state.budget += bonus;
+      log(`📅 新シーズン(${state.season}/${CAMPAIGN.seasons})に突入。繰越ボーナス ${formatUSD(bonus)} を獲得。`);
+    } else {
+      endGame();
+      return;
+    }
   }
   showWorldNews();
   calculateCurrentAverages();
+  generateForecast();
   renderUI();
   resetControls();
-  log(`--- ターン ${state.turn} ---`);
+  log(`--- ターン ${state.seasonTurn} (シーズン${state.season}) ---`);
   elements.unReport.textContent = generateUNReport();
 }
 
@@ -140,6 +158,8 @@ function attachListeners() {
   if (elements.presetCustomSave) elements.presetCustomSave.addEventListener('click', saveCustomPreset);
   elements.replayButton.addEventListener('click', () => location.reload());
   elements.downloadLog.addEventListener('click', downloadHistory);
+  elements.onboardingOpenButtons?.forEach(btn => btn.addEventListener('click', openOnboarding));
+  if (elements.onboardingClose) elements.onboardingClose.addEventListener('click', closeOnboarding);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
