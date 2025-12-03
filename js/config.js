@@ -38,6 +38,49 @@ const CHALLENGES = {
     name: '成長ドライブ',
     description: '総収入を初期予算の1.8倍以上にする',
     goal: '総収入を初期予算の1.8倍以上'
+  },
+  balance_keeper: {
+    key: 'balance_keeper',
+    name: 'サステナ平衡',
+    description: '環境と技術の両立を図る',
+    goal: '環境75以上 & 技術ポイント1200以上',
+    difficulty: 'normal',
+    conditions: [
+      { type: 'env', target: 75, comparator: '>=' },
+      { type: 'tech', target: 1200, comparator: '>=' }
+    ]
+  },
+  tech_rush: {
+    key: 'tech_rush',
+    name: 'テックラッシュ',
+    description: '宇宙時代を目指せ',
+    goal: '技術ポイント2500以上',
+    difficulty: 'hard',
+    conditions: [
+      { type: 'tech', target: 2500, comparator: '>=' }
+    ]
+  },
+  prosperity: {
+    key: 'prosperity',
+    name: '豊穣の国',
+    description: '収益と環境を両立',
+    goal: '総収入2.2倍 & 環境60以上',
+    difficulty: 'normal',
+    conditions: [
+      { type: 'revenue', target: 2.2, comparator: '>=' },
+      { type: 'env', target: 60, comparator: '>=' }
+    ]
+  },
+  survivor: {
+    key: 'survivor',
+    name: 'サバイバー',
+    description: '予算を守りつつ災害に耐える',
+    goal: '予算マイナス無し & 環境50以上',
+    difficulty: 'easy',
+    conditions: [
+      { type: 'budget', target: 0, comparator: '>=' },
+      { type: 'env', target: 50, comparator: '>=' }
+    ]
   }
 };
 
@@ -93,6 +136,8 @@ const GAME_CONFIG = {
     agriBoostMultiplier: 1.2,
     dragonPlanMultiplier: 1.05,
     orbitalNetMultiplier: 1.08,
+    automationMultiplier: 1.05,
+    regenerativeBonus: 0.02,
     climateFactors: {
       arid: 0.9,
       tropical: 1.05,
@@ -130,6 +175,7 @@ const GAME_CONFIG = {
     irriBonus: 2,
     ecoFertilizerMultiplier: 0.5,
     amazonShieldMultiplier: 0.5,
+    regenerativeMultiplier: 0.7,
   },
   technology: {
     techGainDivisor: 1e7,
@@ -139,8 +185,20 @@ const GAME_CONFIG = {
       ecoFertilizer: 300,
       precisionAg: 1200,
       orbitalNet: 2500,
+      automation: 4000,
+      regenerative: 6000,
     },
     eraThresholds: [0, 50, 120, 240, 500, 1200, 2500],
+  },
+  forecast: {
+    heatRiskTemp: 30,
+    droughtLowPrecip: 8,
+    rainHighPrecip: 40
+  },
+  campaign: {
+    seasons: 2,
+    turnsPerSeason: TURN_COUNT,
+    seasonBonus: 0.04
   },
   scoring: {
     budgetDivisor: 1e6,

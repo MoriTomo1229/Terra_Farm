@@ -50,11 +50,16 @@
         <option value="free">フリー（目標なし）</option>
         <option value="env_guard">環境キーパー（最終環境スコア80以上）</option>
         <option value="growth_drive">成長ドライブ（総収入を初期予算の1.8倍以上）</option>
+        <option value="balance_keeper">サステナ平衡（環境75 & 技術1200）</option>
+        <option value="tech_rush">テックラッシュ（技術ポイント2500）</option>
+        <option value="prosperity">豊穣の国（総収入2.2倍 & 環境60）</option>
+        <option value="survivor">サバイバー（予算を守る & 環境50）</option>
       </select>
     </div>
 
     <div class="start-actions">
       <button id="start-button" aria-label="ミッション開始">ミッション開始</button>
+      <button id="open-tutorial" class="ghost">遊び方ガイド</button>
     </div>
     <div id="start-error" class="warning" role="alert"></div>
   </div>
@@ -75,12 +80,17 @@
   <main id="game-container" class="panel" role="main" style="background:none; box-shadow:none; border:none;">
     <div id="status-display" class="panel">
       <p>ターン: <strong><span id="turn-counter">0</span>/<span id="max-turns">10</span></strong></p>
+      <p>シーズン: <strong><span id="season-counter">1</span>/<span id="season-max">2</span></strong>（今季 <span id="turn-in-season">0</span>/<span id="season-turns">10</span>）</p>
       <p>予算: <strong id="budget-value">$0</strong></p>
       <p>総収入: <strong id="total-food-value">$0</strong></p>
       <p>環境スコア: <strong id="env-score-value">70</strong></p>
       <p>時代: <strong id="era-value">-</strong></p>
       <p>技術ポイント: <strong id="tech-points-value">0</strong></p>
       <p class="challenge-progress-row">チャレンジ進行度: <span id="challenge-progress" class="chip chip-pending">-</span></p>
+      <div class="challenge-meter" aria-label="チャレンジ進捗メーター">
+        <div id="challenge-meter-bar" class="challenge-meter-bar"></div>
+        <div id="challenge-meter-text" class="challenge-meter-text">0%</div>
+      </div>
       <p>作物: <strong id="crop-value">-</strong></p>
 
       <hr>
@@ -88,6 +98,53 @@
       <p>土壌水分: <strong id="moisture-value">0</strong></p>
       <p>降水量: <strong id="precipitation-value">0</strong></p>
       <p>気温: <strong id="temperature-value">0</strong> ℃</p>
+
+      <div id="weather-dashboard" class="small-panel panel">
+        <h4>天候ダッシュボード</h4>
+        <div class="weather-row">
+          <div class="weather-card">
+            <div class="label">湿度</div>
+            <div class="value" id="weather-moisture">-</div>
+          </div>
+          <div class="weather-card">
+            <div class="label">降水</div>
+            <div class="value" id="weather-precip">-</div>
+          </div>
+          <div class="weather-card">
+            <div class="label">気温</div>
+            <div class="value" id="weather-temp">-</div>
+          </div>
+        </div>
+        <div class="forecast">
+          <h5>次ターン予報</h5>
+          <div class="forecast-row">
+            <span>湿度</span>
+            <span id="forecast-moisture" class="forecast-value">-</span>
+          </div>
+          <div class="forecast-row">
+            <span>降水</span>
+            <span id="forecast-precip" class="forecast-value">-</span>
+          </div>
+          <div class="forecast-row">
+            <span>気温</span>
+            <span id="forecast-temp" class="forecast-value">-</span>
+          </div>
+          <div class="forecast-risks">
+            <div class="risk">
+              <div class="risk-label">干ばつリスク</div>
+              <div class="risk-bar"><div id="risk-drought" class="risk-bar-fill"></div></div>
+            </div>
+            <div class="risk">
+              <div class="risk-label">熱波リスク</div>
+              <div class="risk-bar"><div id="risk-heat" class="risk-bar-fill"></div></div>
+            </div>
+            <div class="risk">
+              <div class="risk-label">恵みの雨チャンス</div>
+              <div class="risk-bar"><div id="risk-rain" class="risk-bar-fill"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="legend">
         <span class="legend-box p1"></span>貧弱
@@ -220,6 +277,29 @@
       <div class="modal-actions" style="margin-top: 16px;">
         <button id="replay-button">もう一度プレイ</button>
         <button id="download-log">ログをダウンロード</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="season-modal" class="modal-hidden" role="dialog" aria-modal="true">
+    <div class="modal-content panel">
+      <h2>シーズン終了</h2>
+      <p id="season-summary"></p>
+      <p class="muted">次のシーズンに進むと少額の成長ボーナスが予算に加算されます。</p>
+      <div class="modal-actions">
+        <button id="continue-season">次のシーズンへ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tutorial-modal" class="modal-hidden" role="dialog" aria-modal="true">
+    <div class="modal-content panel tutorial">
+      <h2>Terra Farm ガイド</h2>
+      <div id="tutorial-step" class="tutorial-step"></div>
+      <div class="modal-actions">
+        <button id="tutorial-prev" class="ghost">戻る</button>
+        <button id="tutorial-next">次へ</button>
+        <button id="tutorial-skip" class="ghost">スキップ</button>
       </div>
     </div>
   </div>
