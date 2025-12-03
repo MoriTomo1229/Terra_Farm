@@ -14,6 +14,8 @@ const elements = {
   header: $('#main-header'),
   selectedCountry: $('#selected-country'),
   challengeBadge: $('#challenge-badge'),
+  seasonCounter: $('#season-counter'),
+  maxSeasonsLabel: $('#max-seasons'),
   gameContainer: $('#game-container'),
 
   turnCounter: $('#turn-counter'),
@@ -24,12 +26,21 @@ const elements = {
   eraValue: $('#era-value'),
   techPointsValue: $('#tech-points-value'),
   challengeProgress: $('#challenge-progress'),
+  challengeProgressBar: $('#challenge-progress-bar'),
+  challengeProgressDetail: $('#challenge-progress-detail'),
   cropValue: $('#crop-value'),
 
   ndviValue: $('#ndvi-value'),
   moistureValue: $('#moisture-value'),
   precipitationValue: $('#precipitation-value'),
   temperatureValue: $('#temperature-value'),
+  weatherMoisture: $('#weather-moisture'),
+  weatherPrecip: $('#weather-precip'),
+  weatherTemp: $('#weather-temp'),
+  forecastMoisture: $('#forecast-moisture'),
+  forecastPrecip: $('#forecast-precip'),
+  forecastTemp: $('#forecast-temp'),
+  forecastRisks: $('#forecast-risks'),
 
   map: $('#map'),
   cropSelect: $('#crop-select'),
@@ -79,7 +90,10 @@ const elements = {
   finalScore: $('#final-score'),
   replayButton: $('#replay-button'),
   downloadLog: $('#download-log'),
-  unlockList: $('#unlock-list')
+  unlockList: $('#unlock-list'),
+  tutorialModal: $('#tutorial-modal'),
+  openTutorial: $('#open-tutorial'),
+  closeTutorial: $('#close-tutorial')
 };
 
 // ==================== UI描画 & ヘルパー ====================
@@ -116,6 +130,8 @@ function pushUnlock(text) {
 
 function renderUI() {
   elements.turnCounter.textContent = state.turn;
+  if (elements.seasonCounter) elements.seasonCounter.textContent = state.season;
+  if (elements.maxSeasonsLabel) elements.maxSeasonsLabel.textContent = state.maxSeasons;
   elements.budgetValue.textContent = formatUSD(state.budget);
   elements.totalFoodValue.textContent = formatUSD(state.totalFoodValue);
   elements.envScoreValue.textContent = state.envScore;
@@ -126,6 +142,14 @@ function renderUI() {
   elements.moistureValue.textContent = state.soilMoisture;
   elements.precipitationValue.textContent = state.precipitation;
   elements.temperatureValue.textContent = state.temperature;
+  if (elements.weatherMoisture) elements.weatherMoisture.textContent = `${state.soilMoisture}%`;
+  if (elements.weatherPrecip) elements.weatherPrecip.textContent = `${state.precipitation} mm`;
+  if (elements.weatherTemp) elements.weatherTemp.textContent = `${state.temperature} ℃`;
+  const fc = state.forecast || {};
+  if (elements.forecastMoisture) elements.forecastMoisture.textContent = Number.isFinite(fc.soilMoisture) ? `${Math.round(fc.soilMoisture)}%` : '-';
+  if (elements.forecastPrecip) elements.forecastPrecip.textContent = Number.isFinite(fc.precipitation) ? `${Math.round(fc.precipitation)} mm` : '-';
+  if (elements.forecastTemp) elements.forecastTemp.textContent = Number.isFinite(fc.temperature) ? `${Math.round(fc.temperature)} ℃` : '-';
+  renderForecastRisks(fc.risks || []);
   updateChallengeProgressUI();
   renderMap();
   renderHistory();
@@ -306,6 +330,31 @@ function updateChallengeProgressUI() {
     chip.classList.add('chip-pending');
   }
   chip.textContent = `${info.name}: ${text}`;
+  const pct = Math.round((state.challengeProgress?.value || 0) * 100);
+  if (elements.challengeProgressBar) {
+    elements.challengeProgressBar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+  }
+  if (elements.challengeProgressDetail) {
+    elements.challengeProgressDetail.textContent = state.challengeProgress?.detail || info.goal;
+  }
+}
+
+function renderForecastRisks(risks) {
+  if (!elements.forecastRisks) return;
+  elements.forecastRisks.innerHTML = '';
+  if (!risks.length) {
+    const tag = document.createElement('span');
+    tag.className = 'risk-tag risk-low';
+    tag.textContent = 'リスク情報なし';
+    elements.forecastRisks.appendChild(tag);
+    return;
+  }
+  risks.forEach(risk => {
+    const tag = document.createElement('span');
+    tag.className = `risk-tag risk-${risk.level}`;
+    tag.textContent = risk.label;
+    elements.forecastRisks.appendChild(tag);
+  });
 }
 
 function renderTrendBars(el, values, colorClass, formatter) {
@@ -442,7 +491,7 @@ function renderHistory() {
     const row = document.createElement('tr');
     const alloc = `肥:${formatUSD(entry.allocations.fertilizer)} / 灌:${formatUSD(entry.allocations.irrigation)} / 技:${formatUSD(entry.allocations.tech)}`;
     [
-      entry.turn,
+      `S${entry.season || 1}-T${entry.turn}`,
       alloc,
       entry.avgNdvi.toFixed(3),
       formatUSD(entry.revenue),

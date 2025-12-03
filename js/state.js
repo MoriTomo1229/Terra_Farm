@@ -11,6 +11,8 @@ let state = {
   envScore: 70,
   techPoints: 0,
   eraIndex: 0,
+  season: 1,
+  maxSeasons: 3,
   customPreset: null,
   chartData: [],
   baseMapPotential: [],   // 初期NDVI（不変）
@@ -19,7 +21,11 @@ let state = {
   soilMoisture: 0,
   precipitation: 0,
   temperature: 0,
+  forecast: null,
   history: [],
+  seasonSummaries: [],
   unlocked: {},
-  skillUsed: false
+  skillUsed: false,
+  tutorialSeen: false,
+  challengeProgress: { value: 0, detail: '' }
 };

@@ -2,6 +2,8 @@
 
 function initStartScreen() {
   elements.startButton.addEventListener('click', onStart);
+  if (elements.openTutorial) elements.openTutorial.addEventListener('click', showTutorial);
+  if (elements.closeTutorial) elements.closeTutorial.addEventListener('click', hideTutorial);
 }
 
 function getSelectedCountryKey() {
@@ -48,6 +50,8 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
       ...state,
       countryKey, year,
       turn: 0,
+      season: 1,
+      maxSeasons: state.maxSeasons || 3,
       budget: startingBudget,
       initialBudget: startingBudget,
       totalFoodValue: 0,
@@ -56,14 +60,18 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
       eraIndex: 0,
       challenge: challengeKey,
       challengeStatus: challengeKey === 'free' ? 'success' : 'pending',
+      challengeProgress: { value: 0, detail: '' },
       customPreset: null,
       chartData: [],
       baseMapPotential: scaledMapData,
       currentMapNdvi: JSON.parse(JSON.stringify(scaledMapData)),
       avgNdvi: 0,
       history: [],
+      seasonSummaries: [],
+      forecast: null,
       unlocked: {},
-      skillUsed: false
+      skillUsed: false,
+      tutorialSeen: state.tutorialSeen
     };
 
     const c = COUNTRIES[countryKey];
@@ -75,8 +83,10 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
     const displayYear = parseInt(year,10) + 2000;
     elements.selectedCountry.innerHTML = `<span class="flag">${c.flag}</span> <strong>${c.name} (${displayYear}) — Skill: ${c.skill}</strong>`;
     elements.maxTurns.textContent = TURN_COUNT;
+    if (elements.maxSeasonsLabel) elements.maxSeasonsLabel.textContent = state.maxSeasons;
     const challengeInfo = CHALLENGES[challengeKey] || CHALLENGES.free;
     elements.challengeBadge.textContent = `チャレンジ: ${challengeInfo.name} — ${challengeInfo.goal}`;
+    updateChallengeProgress();
     updateChallengeProgressUI();
 
     log(`ミッション開始: ${c.name} (${displayYear}年). 初期予算 ${formatUSD(state.budget)}. チャレンジ: ${challengeInfo.name}.`);
@@ -92,17 +102,37 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
 }
 
 function nextTurn() {
-  state.turn++;
-  if (state.turn > TURN_COUNT) {
-    endGame();
-    return;
+  if (state.turn >= TURN_COUNT) {
+    const summary = recordSeasonSummary();
+    if (state.season >= state.maxSeasons) {
+      log(`=== シーズン${summary.season}終了: 予算${formatUSD(summary.budget)}, 環境${summary.env}, 技術${summary.tech.toLocaleString()} ===`);
+      endGame();
+      return;
+    }
+    handleSeasonEnd(summary);
   }
+  state.turn++;
   showWorldNews();
   calculateCurrentAverages();
   renderUI();
   resetControls();
   log(`--- ターン ${state.turn} ---`);
   elements.unReport.textContent = generateUNReport();
+}
+
+function handleSeasonEnd(summary) {
+  const info = summary || recordSeasonSummary();
+  log(`=== シーズン${info.season}終了: 予算${formatUSD(info.budget)}, 環境${info.env}, 技術${info.tech.toLocaleString()} ===`);
+  state.season += 1;
+  state.turn = 0;
+  state.skillUsed = false;
+  if (elements.specialSkillButton) elements.specialSkillButton.disabled = false;
+}
+
+function recordSeasonSummary() {
+  const summary = { season: state.season, budget: state.budget, env: state.envScore, tech: state.techPoints, revenue: state.totalFoodValue };
+  state.seasonSummaries.push(summary);
+  return summary;
 }
 
 function endGame() {
@@ -125,6 +155,19 @@ function endGame() {
   log('ミッション完了。');
 }
 
+function showTutorial() {
+  if (!elements.tutorialModal) return;
+  elements.tutorialModal.classList.remove('modal-hidden');
+  elements.tutorialModal.classList.add('modal-visible');
+}
+
+function hideTutorial() {
+  if (!elements.tutorialModal) return;
+  elements.tutorialModal.classList.add('modal-hidden');
+  elements.tutorialModal.classList.remove('modal-visible');
+  state.tutorialSeen = true;
+}
+
 // ==================== イベント登録 ====================
 function attachListeners() {
   ['fertilizerSlider', 'irrigationSlider', 'techSlider'].forEach(id => {
@@ -145,4 +188,5 @@ function attachListeners() {
 document.addEventListener('DOMContentLoaded', () => {
   initStartScreen();
   attachListeners();
+  if (!state.tutorialSeen) showTutorial();
 });

@@ -38,6 +38,24 @@ const CHALLENGES = {
     name: '成長ドライブ',
     description: '総収入を初期予算の1.8倍以上にする',
     goal: '総収入を初期予算の1.8倍以上'
+  },
+  tech_surge: {
+    key: 'tech_surge',
+    name: 'テックサージ',
+    description: '技術ポイントを2000以上に到達させる',
+    goal: '技術ポイント2000以上'
+  },
+  revenue_marathon: {
+    key: 'revenue_marathon',
+    name: 'リッチマラソン',
+    description: '長期運用で総収入を初期予算の2.5倍に',
+    goal: '総収入を初期予算の2.5倍'
+  },
+  balanced_future: {
+    key: 'balanced_future',
+    name: 'バランスの未来',
+    description: '環境と技術の両立を目指す',
+    goal: '環境75以上かつ技術800以上'
   }
 };
 
@@ -61,8 +79,10 @@ const GAME_CONFIG = {
     emeraldRecoveryFactor: 0.88,
     baseCapBonus: 0.12,
     precisionAgBaseCapBonus: 0.15,
+    precisionAg2BaseCapBonus: 0.18,
     hardCap: 0.94,
     precisionAgHardCap: 0.97,
+    precisionAg2HardCap: 0.985,
     fertMomentum: {
       base: 0.55,
       precipitationFactor: 0.3,
@@ -91,6 +111,7 @@ const GAME_CONFIG = {
     techPointFactor: 0.008, // 100 * 0.8 -> 0.8 / 100
     techInvestmentFactor: 0.4,
     agriBoostMultiplier: 1.2,
+    skillUpgradeMultiplier: 1.05,
     dragonPlanMultiplier: 1.05,
     orbitalNetMultiplier: 1.08,
     climateFactors: {
@@ -129,16 +150,22 @@ const GAME_CONFIG = {
     techBonus: 5,
     irriBonus: 2,
     ecoFertilizerMultiplier: 0.5,
+    ecoFertilizerTier2Multiplier: 0.35,
+    skillUpgradeEnvMultiplier: 0.9,
     amazonShieldMultiplier: 0.5,
   },
   technology: {
     techGainDivisor: 1e7,
     techGainRandomDivisor: 5e7,
     agriBoostMultiplier: 1.2,
+    researchLabMultiplier: 1.15,
     unlocks: {
       ecoFertilizer: 300,
+      ecoFertilizer2: 900,
       precisionAg: 1200,
+      precisionAg2: 2000,
       orbitalNet: 2500,
+      researchLab: 3200,
     },
     eraThresholds: [0, 50, 120, 240, 500, 1200, 2500],
   },

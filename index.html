@@ -50,13 +50,33 @@
         <option value="free">フリー（目標なし）</option>
         <option value="env_guard">環境キーパー（最終環境スコア80以上）</option>
         <option value="growth_drive">成長ドライブ（総収入を初期予算の1.8倍以上）</option>
+        <option value="tech_surge">テックサージ（技術ポイント2000以上）</option>
+        <option value="revenue_marathon">リッチマラソン（総収入を2.5倍に）</option>
+        <option value="balanced_future">バランスの未来（環境75+技術800）</option>
       </select>
     </div>
 
     <div class="start-actions">
+      <button id="open-tutorial" class="ghost" type="button">チュートリアルを見る</button>
       <button id="start-button" aria-label="ミッション開始">ミッション開始</button>
     </div>
     <div id="start-error" class="warning" role="alert"></div>
+  </div>
+
+  <div id="tutorial-modal" class="modal-hidden" role="dialog" aria-modal="true">
+    <div class="modal-content panel tutorial-modal">
+      <h2>Terra Farm チュートリアル</h2>
+      <ol class="tutorial-steps">
+        <li>国を選んで初期予算とミッション年を入力します。例: <strong>200B</strong>。</li>
+        <li>チャレンジを選ぶと目標に応じて進捗バーが表示されます。フリーなら自由にプレイ。</li>
+        <li>肥料・灌漑・技術のスライダーで予算を配分し、ターン実行ボタンで進行。</li>
+        <li>天候ダッシュボードで現在の気象と次ターン予報、リスクをチェックしましょう。</li>
+        <li>国家スキルや技術アンロックを活用し、環境と収益のバランスを取ってください。</li>
+      </ol>
+      <div class="modal-actions">
+        <button id="close-tutorial" type="button">閉じる</button>
+      </div>
+    </div>
   </div>
 
   <!-- ニュースバナー -->
@@ -69,6 +89,7 @@
       <h1 id="game-title">Terra Farm</h1>
       <div id="selected-country" class="selected-country"></div>
       <div class="challenge-badge" id="challenge-badge" aria-live="polite">チャレンジ: -</div>
+      <div class="season-indicator">シーズン <span id="season-counter">1</span>/<span id="max-seasons">1</span></div>
     </div>
   </header>
 
@@ -81,6 +102,10 @@
       <p>時代: <strong id="era-value">-</strong></p>
       <p>技術ポイント: <strong id="tech-points-value">0</strong></p>
       <p class="challenge-progress-row">チャレンジ進行度: <span id="challenge-progress" class="chip chip-pending">-</span></p>
+      <div class="progress-container" aria-label="チャレンジ進行率">
+        <div id="challenge-progress-bar" class="progress-bar"></div>
+      </div>
+      <p id="challenge-progress-detail" class="muted">目標までの詳細はターン開始後に表示されます。</p>
       <p>作物: <strong id="crop-value">-</strong></p>
 
       <hr>
@@ -88,6 +113,29 @@
       <p>土壌水分: <strong id="moisture-value">0</strong></p>
       <p>降水量: <strong id="precipitation-value">0</strong></p>
       <p>気温: <strong id="temperature-value">0</strong> ℃</p>
+
+      <div class="weather-dashboard panel">
+        <h4>天候ダッシュボード</h4>
+        <div class="weather-grid">
+          <div>
+            <p class="muted">現在の状況</p>
+            <ul class="weather-list">
+              <li>土壌水分: <strong id="weather-moisture">-</strong></li>
+              <li>降水量: <strong id="weather-precip">-</strong></li>
+              <li>気温: <strong id="weather-temp">-</strong> ℃</li>
+            </ul>
+          </div>
+          <div>
+            <p class="muted">次ターン予報</p>
+            <ul class="weather-list">
+              <li>土壌水分: <strong id="forecast-moisture">-</strong></li>
+              <li>降水量: <strong id="forecast-precip">-</strong></li>
+              <li>気温: <strong id="forecast-temp">-</strong> ℃</li>
+            </ul>
+          </div>
+        </div>
+        <div id="forecast-risks" class="risk-tags" aria-live="polite"></div>
+      </div>
 
       <div class="legend">
         <span class="legend-box p1"></span>貧弱

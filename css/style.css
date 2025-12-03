@@ -206,6 +206,27 @@ button.accent { background: linear-gradient(90deg,#8a2be2,#da70d6); }
 .dot-env { fill: #7bed9f; }
 .dot-tech { fill: #7c5cff; }
 
+.ghost { background: transparent; color: #90a4ae; border: 1px solid #90a4ae; }
+
+.progress-container { width: 100%; height: 10px; background: #1b2b34; border-radius: 999px; overflow: hidden; margin-bottom: 4px; }
+.progress-bar { height: 10px; width: 0%; background: linear-gradient(90deg, #42a5f5, #7c4dff); transition: width 0.3s ease; }
+
+.weather-dashboard { margin-top: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; }
+.weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.weather-list { list-style: none; padding: 0; margin: 0; }
+.weather-list li { margin: 2px 0; }
+.risk-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.risk-tag { padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+.risk-low { background: #1b5e20; color: #c8e6c9; }
+.risk-mid { background: #f9a825; color: #1b2b34; }
+.risk-high { background: #c62828; color: #fff; }
+
+.tutorial-modal { max-width: 640px; }
+.tutorial-steps { padding-left: 20px; color: #cfd8dc; line-height: 1.6; }
+.tutorial-steps strong { color: #fff; }
+
+.season-indicator { font-size: 14px; color: #cfd8dc; }
+
 /* レスポンシブ対応 */
 @media (max-width: 1200px) {
   #game-container { grid-template-columns: 1fr 320px; }
