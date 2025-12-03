@@ -174,6 +174,10 @@ button.accent { background: linear-gradient(90deg,#8a2be2,#da70d6); }
 .chip-success { background: rgba(46,204,113,0.15); color: #a8ffcf; border: 1px solid rgba(46,204,113,0.35); }
 .chip-failed { background: rgba(255,99,132,0.15); color: #ffc2c2; border: 1px solid rgba(255,99,132,0.35); }
 .chip-neutral { background: rgba(0,188,212,0.12); color: #b4f1ff; border: 1px solid rgba(0,188,212,0.28); }
+.challenge-meter { position: relative; background: #1e2b36; border-radius: 10px; height: 14px; margin: 6px 0 12px; overflow: hidden; border: 1px solid #2e3e4d; }
+.challenge-meter-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #45c2ff, #00e0a4); transition: width 0.4s ease; }
+.challenge-meter-bar.complete { background: linear-gradient(90deg, #5cb85c, #00e676); }
+.challenge-meter-text { position: absolute; top: -18px; right: 6px; font-size: 11px; color: #b7c2cc; }
 
 /* トレンドチャート */
 #trend-chart h4 { margin: 0 0 6px; }
@@ -205,6 +209,21 @@ button.accent { background: linear-gradient(90deg,#8a2be2,#da70d6); }
 .dot-ndvi { fill: #5cb85c; }
 .dot-env { fill: #7bed9f; }
 .dot-tech { fill: #7c5cff; }
+
+.weather-row { display:flex; gap:8px; margin:6px 0; }
+.weather-card { flex:1; background:#15202a; border:1px solid #1f2c3a; border-radius:8px; padding:8px; }
+.weather-card .label { font-size:12px; color:#9ab1c5; }
+.weather-card .value { font-size:18px; font-weight:700; color:#e0f7ff; }
+.forecast { margin-top:8px; background:#111a23; padding:8px; border-radius:8px; border:1px solid #1f2c3a; }
+.forecast h5 { margin:0 0 6px; font-size:14px; color:#bcd7f0; }
+.forecast-row { display:flex; justify-content:space-between; font-size:12px; padding:2px 0; color:#dce8f5; }
+.forecast-risks { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+.risk-label { font-size:12px; color:#9ab1c5; margin-bottom:2px; }
+.risk-bar { height:10px; background:#0c151d; border-radius:6px; border:1px solid #1f2c3a; overflow:hidden; }
+.risk-bar-fill { height:100%; width:0%; background: linear-gradient(90deg, #ffca28, #ef5350); transition: width 0.4s ease; }
+
+.ghost { background: transparent; border: 1px solid #2c3d4f; color: #c8d7e4; }
+.tutorial .tutorial-step { min-height:80px; line-height:1.5; }
 
 /* レスポンシブ対応 */
 @media (max-width: 1200px) {

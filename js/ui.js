@@ -18,18 +18,33 @@ const elements = {
 
   turnCounter: $('#turn-counter'),
   maxTurns: $('#max-turns'),
+  seasonCounter: $('#season-counter'),
+  seasonMax: $('#season-max'),
+  turnInSeason: $('#turn-in-season'),
+  seasonTurns: $('#season-turns'),
   budgetValue: $('#budget-value'),
   totalFoodValue: $('#total-food-value'),
   envScoreValue: $('#env-score-value'),
   eraValue: $('#era-value'),
   techPointsValue: $('#tech-points-value'),
   challengeProgress: $('#challenge-progress'),
+  challengeMeterBar: $('#challenge-meter-bar'),
+  challengeMeterText: $('#challenge-meter-text'),
   cropValue: $('#crop-value'),
 
   ndviValue: $('#ndvi-value'),
   moistureValue: $('#moisture-value'),
   precipitationValue: $('#precipitation-value'),
   temperatureValue: $('#temperature-value'),
+  weatherMoisture: $('#weather-moisture'),
+  weatherPrecip: $('#weather-precip'),
+  weatherTemp: $('#weather-temp'),
+  forecastMoisture: $('#forecast-moisture'),
+  forecastPrecip: $('#forecast-precip'),
+  forecastTemp: $('#forecast-temp'),
+  riskDrought: $('#risk-drought'),
+  riskHeat: $('#risk-heat'),
+  riskRain: $('#risk-rain'),
 
   map: $('#map'),
   cropSelect: $('#crop-select'),
@@ -79,7 +94,16 @@ const elements = {
   finalScore: $('#final-score'),
   replayButton: $('#replay-button'),
   downloadLog: $('#download-log'),
-  unlockList: $('#unlock-list')
+  unlockList: $('#unlock-list'),
+  seasonModal: $('#season-modal'),
+  seasonSummary: $('#season-summary'),
+  continueSeason: $('#continue-season'),
+  tutorialModal: $('#tutorial-modal'),
+  tutorialStep: $('#tutorial-step'),
+  tutorialPrev: $('#tutorial-prev'),
+  tutorialNext: $('#tutorial-next'),
+  tutorialSkip: $('#tutorial-skip'),
+  openTutorial: $('#open-tutorial')
 };
 
 // ==================== UI描画 & ヘルパー ====================
@@ -116,6 +140,10 @@ function pushUnlock(text) {
 
 function renderUI() {
   elements.turnCounter.textContent = state.turn;
+  elements.turnInSeason.textContent = state.turnInSeason;
+  elements.seasonCounter.textContent = state.season;
+  elements.seasonMax.textContent = state.maxSeasons;
+  elements.seasonTurns.textContent = state.turnsPerSeason;
   elements.budgetValue.textContent = formatUSD(state.budget);
   elements.totalFoodValue.textContent = formatUSD(state.totalFoodValue);
   elements.envScoreValue.textContent = state.envScore;
@@ -126,6 +154,7 @@ function renderUI() {
   elements.moistureValue.textContent = state.soilMoisture;
   elements.precipitationValue.textContent = state.precipitation;
   elements.temperatureValue.textContent = state.temperature;
+  renderWeatherPanel();
   updateChallengeProgressUI();
   renderMap();
   renderHistory();
@@ -306,6 +335,31 @@ function updateChallengeProgressUI() {
     chip.classList.add('chip-pending');
   }
   chip.textContent = `${info.name}: ${text}`;
+
+  if (elements.challengeMeterBar && elements.challengeMeterText) {
+    const percent = state.challengeProgress?.percent ?? 0;
+    elements.challengeMeterBar.style.width = `${Math.min(100, percent)}%`;
+    elements.challengeMeterText.textContent = `${percent}%`;
+    elements.challengeMeterBar.classList.toggle('complete', percent >= 100);
+  }
+}
+
+function renderWeatherPanel() {
+  if (!elements.weatherMoisture) return;
+  elements.weatherMoisture.textContent = `${state.soilMoisture}%`;
+  elements.weatherPrecip.textContent = `${state.precipitation} mm`;
+  elements.weatherTemp.textContent = `${state.temperature} ℃`;
+  const forecast = state.forecast;
+  if (forecast) {
+    elements.forecastMoisture.textContent = `${forecast.soilMoisture}%`;
+    elements.forecastPrecip.textContent = `${forecast.precipitation} mm`;
+    elements.forecastTemp.textContent = `${forecast.temperature} ℃`;
+    const risks = forecast.risks || {};
+    const setRisk = (el, val) => { if (el) el.style.width = `${Math.min(100, val || 0)}%`; };
+    setRisk(elements.riskDrought, risks.drought);
+    setRisk(elements.riskHeat, risks.heatwave);
+    setRisk(elements.riskRain, risks.rain);
+  }
 }
 
 function renderTrendBars(el, values, colorClass, formatter) {
@@ -397,7 +451,7 @@ function downloadHistory() {
       startingBudget: state.initialBudget,
       remainingBudget: state.budget,
       turnsPlayed: state.history.length,
-      turnLimit: TURN_COUNT,
+      turnLimit: state.turnsPerSeason,
       totalFoodValue: state.totalFoodValue,
       skillUsed: state.skillUsed,
       challenge: {
