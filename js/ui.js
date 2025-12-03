@@ -16,6 +16,8 @@ const elements = {
   challengeBadge: $('#challenge-badge'),
   gameContainer: $('#game-container'),
 
+  seasonCounter: $('#season-counter'),
+  maxSeasons: $('#max-seasons'),
   turnCounter: $('#turn-counter'),
   maxTurns: $('#max-turns'),
   budgetValue: $('#budget-value'),
@@ -24,12 +26,20 @@ const elements = {
   eraValue: $('#era-value'),
   techPointsValue: $('#tech-points-value'),
   challengeProgress: $('#challenge-progress'),
+  challengeProgressBar: $('#challenge-progress-bar'),
+  challengeChecklist: $('#challenge-checklist'),
   cropValue: $('#crop-value'),
 
   ndviValue: $('#ndvi-value'),
   moistureValue: $('#moisture-value'),
   precipitationValue: $('#precipitation-value'),
   temperatureValue: $('#temperature-value'),
+  forecastMoisture: $('#forecast-moisture'),
+  forecastPrecipitation: $('#forecast-precipitation'),
+  forecastTemperature: $('#forecast-temperature'),
+  riskDrought: $('#risk-drought'),
+  riskHeatwave: $('#risk-heatwave'),
+  riskRain: $('#risk-rain'),
 
   map: $('#map'),
   cropSelect: $('#crop-select'),
@@ -79,7 +89,20 @@ const elements = {
   finalScore: $('#final-score'),
   replayButton: $('#replay-button'),
   downloadLog: $('#download-log'),
-  unlockList: $('#unlock-list')
+  unlockList: $('#unlock-list'),
+  techTree: $('#tech-tree'),
+  upgradeSkill: $('#upgrade-skill'),
+
+  tutorialModal: $('#tutorial-modal'),
+  openTutorial: $('#open-tutorial'),
+  closeTutorial: $('#close-tutorial'),
+  startFromTutorial: $('#start-from-tutorial'),
+
+  seasonModal: $('#season-modal'),
+  continueSeason: $('#continue-season'),
+  seasonEnv: $('#season-env'),
+  seasonTech: $('#season-tech'),
+  seasonBudget: $('#season-budget')
 };
 
 // ==================== UI描画 & ヘルパー ====================
@@ -115,6 +138,8 @@ function pushUnlock(text) {
 }
 
 function renderUI() {
+  elements.seasonCounter.textContent = state.season;
+  elements.maxSeasons.textContent = CAMPAIGN_CONFIG.seasons;
   elements.turnCounter.textContent = state.turn;
   elements.budgetValue.textContent = formatUSD(state.budget);
   elements.totalFoodValue.textContent = formatUSD(state.totalFoodValue);
@@ -126,7 +151,14 @@ function renderUI() {
   elements.moistureValue.textContent = state.soilMoisture;
   elements.precipitationValue.textContent = state.precipitation;
   elements.temperatureValue.textContent = state.temperature;
+  elements.forecastMoisture.textContent = state.forecast.soilMoisture;
+  elements.forecastPrecipitation.textContent = state.forecast.precipitation;
+  elements.forecastTemperature.textContent = state.forecast.temperature;
+  setRiskChip(elements.riskDrought, state.forecast.risks.drought);
+  setRiskChip(elements.riskHeatwave, state.forecast.risks.heatwave);
+  setRiskChip(elements.riskRain, state.forecast.risks.rain);
   updateChallengeProgressUI();
+  renderTechTree();
   renderMap();
   renderHistory();
   renderTrendChart();
@@ -306,6 +338,59 @@ function updateChallengeProgressUI() {
     chip.classList.add('chip-pending');
   }
   chip.textContent = `${info.name}: ${text}`;
+
+  if (elements.challengeProgressBar) {
+    const pct = state.challengeProgress.total ? Math.round((state.challengeProgress.done / state.challengeProgress.total) * 100) : 0;
+    elements.challengeProgressBar.style.width = `${pct}%`;
+  }
+  if (elements.challengeChecklist) {
+    elements.challengeChecklist.innerHTML = '';
+    (state.challengeProgress.checklist || []).forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item.label;
+      if (item.done) li.classList.add('done');
+      elements.challengeChecklist.appendChild(li);
+    });
+  }
+}
+
+function setRiskChip(el, pct) {
+  if (!el) return;
+  el.textContent = pct ? `${pct}%` : '-';
+  el.classList.remove('chip-success','chip-failed','chip-neutral','chip-pending');
+  if (pct >= 60) el.classList.add('chip-failed');
+  else if (pct >= 40) el.classList.add('chip-pending');
+  else el.classList.add('chip-neutral');
+}
+
+function renderTechTree() {
+  if (!elements.techTree) return;
+  const unlocks = GAME_CONFIG.technology.unlocks;
+  const entries = [
+    { key: 'ecoFertilizer', label: 'エコ肥料', threshold: unlocks.ecoFertilizer },
+    { key: 'resilientSeeds', label: '強靭な種子', threshold: unlocks.resilientSeeds },
+    { key: 'precisionAg', label: '精密農業', threshold: unlocks.precisionAg },
+    { key: 'climateControl', label: '気候制御', threshold: unlocks.climateControl },
+    { key: 'orbitalNet', label: '軌道ネット', threshold: unlocks.orbitalNet },
+    { key: 'aiAdvisor', label: 'AIアドバイザー', threshold: unlocks.aiAdvisor },
+  ];
+  elements.techTree.innerHTML = '';
+  entries.forEach(e => {
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    span.textContent = e.label;
+    const status = document.createElement('span');
+    const unlocked = state.unlocked[e.key];
+    status.textContent = unlocked ? '取得済み' : `必要: ${e.threshold}`;
+    status.className = `tech-badge ${unlocked ? 'tech-unlocked' : 'tech-locked'}`;
+    li.appendChild(span);
+    li.appendChild(status);
+    elements.techTree.appendChild(li);
+  });
+
+  if (elements.upgradeSkill) {
+    elements.upgradeSkill.disabled = state.techPoints < GAME_CONFIG.technology.skillUpgradeCost * state.skillLevel;
+  }
 }
 
 function renderTrendBars(el, values, colorClass, formatter) {
@@ -348,6 +433,34 @@ function renderTrendChart() {
   if (elements.trendNdviLast) elements.trendNdviLast.textContent = last.avgNdvi ? last.avgNdvi.toFixed(3) : '-';
   if (elements.trendEnvLast) elements.trendEnvLast.textContent = Number.isFinite(last.envScore) ? last.envScore : '-';
   if (elements.trendTechLast) elements.trendTechLast.textContent = Number.isFinite(last.techPoints) ? last.techPoints.toLocaleString() : '-';
+}
+
+function showTutorial() {
+  if (!elements.tutorialModal) return;
+  elements.tutorialModal.classList.remove('modal-hidden');
+  elements.tutorialModal.classList.add('modal-visible');
+}
+
+function hideTutorial() {
+  if (!elements.tutorialModal) return;
+  elements.tutorialModal.classList.add('modal-hidden');
+  elements.tutorialModal.classList.remove('modal-visible');
+  state.tutorialSeen = true;
+}
+
+function showSeasonModal(budgetPreview) {
+  if (!elements.seasonModal) return;
+  elements.seasonEnv.textContent = state.envScore;
+  elements.seasonTech.textContent = state.techPoints;
+  elements.seasonBudget.textContent = formatUSD(budgetPreview);
+  elements.seasonModal.classList.remove('modal-hidden');
+  elements.seasonModal.classList.add('modal-visible');
+}
+
+function hideSeasonModal() {
+  if (!elements.seasonModal) return;
+  elements.seasonModal.classList.add('modal-hidden');
+  elements.seasonModal.classList.remove('modal-visible');
 }
 
 function renderTrendLine(svgEl, values, lineClass, dotClass) {

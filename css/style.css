@@ -175,6 +175,27 @@ button.accent { background: linear-gradient(90deg,#8a2be2,#da70d6); }
 .chip-failed { background: rgba(255,99,132,0.15); color: #ffc2c2; border: 1px solid rgba(255,99,132,0.35); }
 .chip-neutral { background: rgba(0,188,212,0.12); color: #b4f1ff; border: 1px solid rgba(0,188,212,0.28); }
 
+.weather-panel h4, .challenge-panel h4 { margin: 6px 0; }
+.weather-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 8px; }
+.weather-label { font-size: 0.85rem; color: #9fb8d1; }
+.risk-column .chip { padding: 3px 8px; font-size: 0.85rem; }
+
+.progress-bar { background: rgba(255,255,255,0.08); border-radius: 10px; height: 12px; margin: 6px 0; overflow: hidden; }
+#challenge-progress-bar { background: linear-gradient(90deg,#4dd0e1,#66ffcc); height: 100%; width: 0%; transition: width 0.4s ease; }
+.checklist { list-style: none; padding-left: 0; margin: 0; display: grid; gap: 4px; }
+.checklist li { background: rgba(255,255,255,0.04); padding: 6px 8px; border-radius: 8px; display: flex; align-items: center; gap: 6px; }
+.checklist .done { text-decoration: line-through; color: #a8ffcf; }
+
+.tech-tree { list-style: none; padding-left: 0; margin: 0; display: grid; gap: 6px; }
+.tech-tree li { padding: 6px 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+.tech-badge { background: rgba(0,188,212,0.15); padding: 2px 6px; border-radius: 6px; font-size: 0.85rem; }
+.tech-locked { color: #9fb8d1; }
+.tech-unlocked { color: #a8ffcf; }
+
+.tutorial-steps { text-align: left; line-height: 1.6; color: #e3f6ff; }
+
+.modal-content .modal-actions button { margin: 0 4px; }
+
 /* トレンドチャート */
 #trend-chart h4 { margin: 0 0 6px; }
 .trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 8px; }

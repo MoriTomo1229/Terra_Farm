@@ -48,6 +48,7 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
       ...state,
       countryKey, year,
       turn: 0,
+      season: 1,
       budget: startingBudget,
       initialBudget: startingBudget,
       totalFoodValue: 0,
@@ -56,6 +57,7 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
       eraIndex: 0,
       challenge: challengeKey,
       challengeStatus: challengeKey === 'free' ? 'success' : 'pending',
+      challengeProgress: { done: 0, total: (CHALLENGES[challengeKey]?.conditions?.length || 0), checklist: [] },
       customPreset: null,
       chartData: [],
       baseMapPotential: scaledMapData,
@@ -63,7 +65,11 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
       avgNdvi: 0,
       history: [],
       unlocked: {},
-      skillUsed: false
+      unlockedTech: [],
+      skillUsed: false,
+      skillLevel: 1,
+      tutorialSeen: false,
+      forecast: { soilMoisture: 0, precipitation: 0, temperature: 0, risks: { drought: 0, heatwave: 0, rain: 0 } }
     };
 
     const c = COUNTRIES[countryKey];
@@ -75,8 +81,10 @@ async function startGame(countryKey, startingBudget, year, challengeKey) {
     const displayYear = parseInt(year,10) + 2000;
     elements.selectedCountry.innerHTML = `<span class="flag">${c.flag}</span> <strong>${c.name} (${displayYear}) — Skill: ${c.skill}</strong>`;
     elements.maxTurns.textContent = TURN_COUNT;
+    if (elements.maxSeasons) elements.maxSeasons.textContent = CAMPAIGN_CONFIG.seasons;
     const challengeInfo = CHALLENGES[challengeKey] || CHALLENGES.free;
     elements.challengeBadge.textContent = `チャレンジ: ${challengeInfo.name} — ${challengeInfo.goal}`;
+    updateChallengeProgress();
     updateChallengeProgressUI();
 
     log(`ミッション開始: ${c.name} (${displayYear}年). 初期予算 ${formatUSD(state.budget)}. チャレンジ: ${challengeInfo.name}.`);
@@ -107,6 +115,17 @@ function nextTurn() {
 
 function endGame() {
   const C = GAME_CONFIG.scoring;
+  if (state.season < CAMPAIGN_CONFIG.seasons) {
+    const bonus = Math.round(state.initialBudget * CAMPAIGN_CONFIG.carryBudgetRatio * (1 + (state.season-1) * CAMPAIGN_CONFIG.bonusPerSeason));
+    state.budget = Math.max(0, state.budget + bonus);
+    state.initialBudget = state.budget;
+    log(`シーズン${state.season}完了。次シーズンへ。ボーナス: ${formatUSD(bonus)}`);
+    state.turn = 0;
+    state.season += 1;
+    showSeasonModal(state.budget);
+    renderUI();
+    return;
+  }
   elements.finalFood.textContent = formatUSD(state.totalFoodValue);
   elements.finalEnv.textContent = state.envScore;
   elements.finalTech.textContent = ERAS[state.eraIndex];
@@ -125,6 +144,11 @@ function endGame() {
   log('ミッション完了。');
 }
 
+function continueSeasonPlay() {
+  hideSeasonModal();
+  nextTurn();
+}
+
 // ==================== イベント登録 ====================
 function attachListeners() {
   ['fertilizerSlider', 'irrigationSlider', 'techSlider'].forEach(id => {
@@ -133,6 +157,11 @@ function attachListeners() {
   elements.executeButton.addEventListener('click', executeTurn);
   elements.autoAllocateButton.addEventListener('click', autoNormalize);
   elements.specialSkillButton.addEventListener('click', activateSkill);
+  if (elements.upgradeSkill) elements.upgradeSkill.addEventListener('click', upgradeSkill);
+  if (elements.openTutorial) elements.openTutorial.addEventListener('click', () => showTutorial());
+  if (elements.closeTutorial) elements.closeTutorial.addEventListener('click', () => hideTutorial());
+  if (elements.startFromTutorial) elements.startFromTutorial.addEventListener('click', () => { hideTutorial(); onStart(); });
+  if (elements.continueSeason) elements.continueSeason.addEventListener('click', continueSeasonPlay);
   if (elements.presetEnv) elements.presetEnv.addEventListener('click', () => applyPreset({fert:0.45, irri:0.35, tech:0.2}, '環境重視'));
   if (elements.presetRevenue) elements.presetRevenue.addEventListener('click', () => applyPreset({fert:0.55, irri:0.25, tech:0.2}, '収益重視'));
   if (elements.presetTech) elements.presetTech.addEventListener('click', () => applyPreset({fert:0.2, irri:0.25, tech:0.55}, '技術重視'));

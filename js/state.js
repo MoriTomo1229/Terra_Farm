@@ -4,13 +4,21 @@ let state = {
   year: '01',
   challenge: 'free',
   challengeStatus: 'pending',
+  challengeProgress: { done: 0, total: 0, checklist: [] },
   turn: 0,
+  season: 1,
   budget: 0,
   initialBudget: 0,
   totalFoodValue: 0,
   envScore: 70,
   techPoints: 0,
   eraIndex: 0,
+  forecast: {
+    soilMoisture: 0,
+    precipitation: 0,
+    temperature: 0,
+    risks: { drought: 0, heatwave: 0, rain: 0 }
+  },
   customPreset: null,
   chartData: [],
   baseMapPotential: [],   // 初期NDVI（不変）
@@ -21,5 +29,8 @@ let state = {
   temperature: 0,
   history: [],
   unlocked: {},
-  skillUsed: false
+  unlockedTech: [],
+  skillUsed: false,
+  skillLevel: 1,
+  tutorialSeen: false
 };

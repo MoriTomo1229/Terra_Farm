@@ -19,25 +19,50 @@ const CROPS = {
 
 const ERAS = ['石器時代','青銅器時代','鉄器時代','中世','産業革命','近代','宇宙時代'];
 const TURN_COUNT = 10;
+const CAMPAIGN_CONFIG = {
+  seasons: 2,
+  carryBudgetRatio: 0.35,
+  bonusPerSeason: 0.1
+};
 const MAP_SIZE = 100;
 const CHALLENGES = {
   free: {
     key: 'free',
     name: 'フリー',
     description: '自由にプレイ',
-    goal: '目標なし'
+    goal: '目標なし',
+    conditions: []
   },
   env_guard: {
     key: 'env_guard',
     name: '環境キーパー',
     description: '最終環境スコア80以上を目指す',
-    goal: '最終環境スコア80以上'
+    goal: '最終環境スコア80以上',
+    conditions: [{ type: 'env', target: 80 }]
   },
   growth_drive: {
     key: 'growth_drive',
     name: '成長ドライブ',
     description: '総収入を初期予算の1.8倍以上にする',
-    goal: '総収入を初期予算の1.8倍以上'
+    goal: '総収入を初期予算の1.8倍以上',
+    conditions: [{ type: 'revenue', ratio: 1.8 }]
+  },
+  tech_rush: {
+    key: 'tech_rush',
+    name: 'テックラッシュ',
+    description: '宇宙時代へ到達する',
+    goal: '技術ポイントで宇宙時代到達',
+    conditions: [{ type: 'era', targetEra: '宇宙時代' }]
+  },
+  harmony: {
+    key: 'harmony',
+    name: '調和の守護者',
+    description: '環境70以上を維持しつつ総収入を1.5倍に',
+    goal: '環境70以上かつ総収入1.5倍',
+    conditions: [
+      { type: 'env', target: 70 },
+      { type: 'revenue', ratio: 1.5 }
+    ]
   }
 };
 
@@ -135,10 +160,14 @@ const GAME_CONFIG = {
     techGainDivisor: 1e7,
     techGainRandomDivisor: 5e7,
     agriBoostMultiplier: 1.2,
+    skillUpgradeCost: 400,
     unlocks: {
       ecoFertilizer: 300,
       precisionAg: 1200,
       orbitalNet: 2500,
+      resilientSeeds: 800,
+      climateControl: 1800,
+      aiAdvisor: 3200
     },
     eraThresholds: [0, 50, 120, 240, 500, 1200, 2500],
   },
@@ -159,4 +188,31 @@ const GAME_CONFIG = {
         max: 0.9,
     }
   }
+};
+
+const SKILL_UPGRADES = {
+  usa: [
+    { level: 1, label: 'AgriBoost I', multiplier: 1.2 },
+    { level: 2, label: 'AgriBoost II', multiplier: 1.35 },
+  ],
+  china: [
+    { level: 1, label: 'Dragon Plan I', multiplier: 1.05 },
+    { level: 2, label: 'Dragon Plan II', multiplier: 1.12 },
+  ],
+  india: [
+    { level: 1, label: 'Monsoon Mastery', mitigation: 0.6 },
+    { level: 2, label: 'Monsoon Harmony', mitigation: 0.45 },
+  ],
+  brazil: [
+    { level: 1, label: 'Amazon Shield', envMultiplier: 0.5 },
+    { level: 2, label: 'Amazon Guardian', envMultiplier: 0.35 },
+  ],
+  egypt: [
+    { level: 1, label: 'Nile Blessing', irrigationBoost: 2 },
+    { level: 2, label: 'Nile Flood', irrigationBoost: 2.5 },
+  ],
+  ireland: [
+    { level: 1, label: 'Emerald Surge', recovery: 0.88 },
+    { level: 2, label: 'Emerald Legacy', recovery: 0.8 },
+  ],
 };
