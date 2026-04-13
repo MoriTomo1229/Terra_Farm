@@ -196,6 +196,8 @@ function attachListeners() {
   if (elements.presetCustomApply) elements.presetCustomApply.addEventListener('click', applyCustomPreset);
   if (elements.presetCustomSave) elements.presetCustomSave.addEventListener('click', saveCustomPreset);
   if (elements.modeSelect) elements.modeSelect.addEventListener('change', handleGameModeChange);
+  if (elements.themeSelect) elements.themeSelect.addEventListener('change', event => applyTheme(event.target.value));
+  if (elements.themeSelectHeader) elements.themeSelectHeader.addEventListener('change', event => applyTheme(event.target.value));
   if (elements.playerNameInput) elements.playerNameInput.addEventListener('blur', () => persistPlayerProfile(elements.playerNameInput.value));
   if (elements.refreshLeaderboardButton) elements.refreshLeaderboardButton.addEventListener('click', () => { void refreshCompetitionLeaderboard(); });
   if (elements.retrySubmitScore) elements.retrySubmitScore.addEventListener('click', () => { void submitCompetitionResult(); });
@@ -204,6 +206,7 @@ function attachListeners() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  applyTheme(getStoredTheme(), { persist: false });
   initStartScreen();
   attachListeners();
   bootstrapCompetition();
