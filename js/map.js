@@ -1,12 +1,16 @@
 // ==================== マップ読み込み & フォールバック ====================
-async function loadOrGenerateMap(countryKey, year) {
+async function loadOrGenerateMap(countryKey, year, options = {}) {
+  const { allowFallback = true } = options;
   const filePath = `./data/maps/ndvi_${countryKey}${year}.json`;
   try {
     const res = await fetch(filePath);
     if (!res.ok) throw new Error('not found');
     const raw = await res.json();
     return raw.map(row => row.map(v => (v <= -3000 ? null : v * 0.0001)));
-  } catch {
+  } catch (error) {
+    if (!allowFallback) {
+      throw new Error(`競争モード用のマップデータを読み込めませんでした: ${filePath}`);
+    }
     // --- Procedural fallback: パーリン風ノイズ（簡易）
     const base = [];
     const rnd = (x,y) => (Math.sin(x*12.9898+y*78.233)*43758.5453)%1;
