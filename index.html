@@ -15,9 +15,25 @@
       <img src="images/nasa_logo.png" alt="NASA Logo" class="logo"/>
       <div>
         <h1>Terra Farm — 完全拡張版</h1>
-        <p class="subtitle">国を選択し、初期予算とミッション年を設定して開始してください。</p>
+        <p class="subtitle">国を選択し、初期予算とミッション年を設定して開始してください。競争モードでは大会条件が固定されます。</p>
       </div>
     </div>
+
+    <div class="start-meta-grid">
+      <div class="player-input">
+        <label for="player-name-input">プレイヤー名:</label>
+        <input id="player-name-input" type="text" maxlength="20" placeholder="例: TerraPlayer" aria-label="プレイヤー名入力">
+      </div>
+
+      <div class="mode-select">
+        <label for="mode-select">プレイモード:</label>
+        <select id="mode-select" aria-label="プレイモード選択">
+          <option value="solo">通常プレイ</option>
+          <option value="competition">競争モード</option>
+        </select>
+      </div>
+    </div>
+    <p id="mode-helper" class="mode-helper">通常プレイでは国・予算・チャレンジを自由に設定できます。</p>
 
     <div class="country-list" role="group" aria-label="国を選択">
       <label class="country-option"><input type="radio" name="country" value="usa" checked> <span class="flag">🇺🇸</span> United States</label>
@@ -53,6 +69,26 @@
       </select>
     </div>
 
+    <section id="competition-card" class="competition-card panel" aria-live="polite">
+      <div class="competition-card-header">
+        <div>
+          <h2 id="competition-event-name">競争モード</h2>
+          <p id="competition-event-description" class="competition-event-description">固定シードの大会条件でランキングに挑戦できます。</p>
+        </div>
+        <button type="button" id="refresh-leaderboard-button" class="chip-button">更新</button>
+      </div>
+      <p id="competition-status" class="competition-status">大会情報を読み込み中です...</p>
+      <dl id="competition-event-summary" class="competition-summary-list"></dl>
+      <div class="leaderboard-block">
+        <div class="leaderboard-head">
+          <h3>ランキング Top 10</h3>
+          <p id="leaderboard-player-best" class="leaderboard-player-best">自分の記録: 未登録</p>
+        </div>
+        <ol id="leaderboard-list" class="leaderboard-list"></ol>
+        <p id="leaderboard-empty" class="leaderboard-empty">まだスコアが登録されていません。</p>
+      </div>
+    </section>
+
     <div class="start-actions">
       <button id="start-button" aria-label="ミッション開始">ミッション開始</button>
     </div>
@@ -68,6 +104,7 @@
     <div class="title-block">
       <h1 id="game-title">Terra Farm</h1>
       <div id="selected-country" class="selected-country"></div>
+      <div id="session-summary" class="session-summary"></div>
       <div class="challenge-badge" id="challenge-badge" aria-live="polite">チャレンジ: -</div>
     </div>
   </header>
@@ -217,7 +254,9 @@
       <p id="final-challenge" class="challenge-final"></p>
       <hr>
       <p>最終スコア: <strong id="final-score"></strong></p>
+      <p id="final-competition-status" class="competition-final-status"></p>
       <div class="modal-actions" style="margin-top: 16px;">
+        <button id="retry-submit-score" type="button" hidden>スコアを再送信</button>
         <button id="replay-button">もう一度プレイ</button>
         <button id="download-log">ログをダウンロード</button>
       </div>
@@ -228,6 +267,7 @@
   <script src="js/config.js" defer></script>
   <script src="js/state.js" defer></script>
   <script src="js/ui.js" defer></script>
+  <script src="js/competition.js" defer></script>
   <script src="js/map.js" defer></script>
   <script src="js/game-logic.js" defer></script>
   <script src="js/main.js" defer></script>

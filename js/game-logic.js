@@ -3,10 +3,13 @@
 function calculateCurrentAverages() {
   const valid = state.currentMapNdvi.flat().filter(v => v !== null);
   state.avgNdvi = valid.reduce((s,v)=>s+v,0) / (valid.length || 1);
+}
+
+function generateTurnConditions() {
   const country = COUNTRIES[state.countryKey];
-  state.soilMoisture = Math.round((0.4 + (Math.random()*0.45)) * 100);
-  state.precipitation = Math.round( Math.max(0, (Math.random()*60) * (country.climate==='arid'?0.4:1.0)) );
-  state.temperature = Math.round(15 + (Math.random()*20) + (country.climate==='cool'?-5:0) + (country.climate==='tropical'?5:0));
+  state.soilMoisture = Math.round((0.4 + (gameRandom()*0.45)) * 100);
+  state.precipitation = Math.round(Math.max(0, (gameRandom()*60) * (country.climate==='arid'?0.4:1.0)));
+  state.temperature = Math.round(15 + (gameRandom()*20) + (country.climate==='cool'?-5:0) + (country.climate==='tropical'?5:0));
 }
 
 // ==================== 国家スキル ====================
@@ -84,11 +87,12 @@ function updateChallengeProgress() {
     state.challengeStatus = 'success';
     return;
   }
-  if (state.challengeStatus === 'success' || state.challengeStatus === 'failed') return;
-  if (state.challenge === 'env_guard' && state.envScore >= 80) {
-    state.challengeStatus = 'success';
-  } else if (state.challenge === 'growth_drive' && state.totalFoodValue >= state.initialBudget * 1.8) {
-    state.challengeStatus = 'success';
+  if (state.challenge === 'env_guard') {
+    state.challengeStatus = state.envScore >= 80 ? 'success' : 'pending';
+  } else if (state.challenge === 'growth_drive') {
+    state.challengeStatus = state.totalFoodValue >= state.initialBudget * 1.8 ? 'success' : 'pending';
+  } else {
+    state.challengeStatus = 'pending';
   }
 }
 
@@ -97,7 +101,6 @@ function finalizeChallengeOutcome() {
     state.challengeStatus = 'success';
     return;
   }
-  if (state.challengeStatus === 'success') return;
   if (state.challenge === 'env_guard') {
     state.challengeStatus = state.envScore >= 80 ? 'success' : 'failed';
   } else if (state.challenge === 'growth_drive') {
@@ -109,6 +112,7 @@ function finalizeChallengeOutcome() {
 
 // ==================== ターン実行 ====================
 function executeTurn() {
+  if (state.isTurnProcessing) return;
   const fert = Number(elements.fertilizerSlider.value) || 0;
   const irri = Number(elements.irrigationSlider.value) || 0;
   const tech = Number(elements.techSlider.value) || 0;
@@ -117,6 +121,8 @@ function executeTurn() {
     elements.allocationWarning.textContent = '予算オーバーです！';
     return;
   }
+  state.isTurnProcessing = true;
+  if (typeof updateRemainingBudget === 'function') updateRemainingBudget();
 
   const C = GAME_CONFIG;
   const baselineBudget = state.initialBudget || country?.startingBudget || 1;
@@ -161,15 +167,15 @@ function executeTurn() {
         const cap = Math.min(baseCap, hardCap);
         const headroom = Math.max(0, cap - recovering);
 
-        const fertMomentum = headroom * fertEffect * (C.map.fertMomentum.base + precipitationBoost * C.map.fertMomentum.precipitationFactor + Math.random() * C.map.fertMomentum.randomFactor);
-        const irrigationMomentum = headroom * irriEffect * (C.map.irriMomentum.base + dryness * C.map.irriMomentum.drynessFactor + heatStress * C.map.irriMomentum.heatStressFactor + Math.random() * C.map.irriMomentum.randomFactor);
+        const fertMomentum = headroom * fertEffect * (C.map.fertMomentum.base + precipitationBoost * C.map.fertMomentum.precipitationFactor + gameRandom() * C.map.fertMomentum.randomFactor);
+        const irrigationMomentum = headroom * irriEffect * (C.map.irriMomentum.base + dryness * C.map.irriMomentum.drynessFactor + heatStress * C.map.irriMomentum.heatStressFactor + gameRandom() * C.map.irriMomentum.randomFactor);
         let newNdvi = recovering + fertMomentum + irrigationMomentum;
 
         const envPenalty = ((100 - state.envScore) / C.map.envPenaltyDivisor);
         const climateDrag = (dryness * C.map.climateDrag.dryness) + (heatStress * C.map.climateDrag.heatStress) - (precipitationBoost * C.map.climateDrag.precipitation);
         const erosion = Math.max(0, last - basePotential) * C.map.erosionFactor;
         newNdvi += techLevelBoost + techInvestmentBoost - envPenalty - climateDrag - erosion;
-        newNdvi += (Math.random() - 0.5) * C.map.noiseFactor; // 小さな気象ノイズ
+        newNdvi += (gameRandom() - 0.5) * C.map.noiseFactor; // 小さな気象ノイズ
 
         if (!Number.isFinite(newNdvi)) newNdvi = basePotential;
         state.currentMapNdvi[r][c] = Math.max(C.map.minNdvi, Math.min(cap, newNdvi));
@@ -198,14 +204,14 @@ function executeTurn() {
   const droughtRisk = (state.precipitation < E.drought.precipThreshold && state.temperature > E.drought.tempThreshold);
   const monsoonMitigation = state.unlocked.monsoon ? E.monsoonMitigation : 1.0;
 
-  if (droughtRisk && irri < state.budget * E.drought.irriBudgetRatio && Math.random() < E.drought.chance * monsoonMitigation) {
+  if (droughtRisk && irri < state.budget * E.drought.irriBudgetRatio && gameRandom() < E.drought.chance * monsoonMitigation) {
     production = Math.round(production * E.drought.penalty); event = '🚨 干ばつにより生産量が大幅に減少。';
-  } else if (state.temperature > E.heatwave.tempThreshold && Math.random() < E.heatwave.chance * monsoonMitigation) {
+  } else if (state.temperature > E.heatwave.tempThreshold && gameRandom() < E.heatwave.chance * monsoonMitigation) {
     production = Math.round(production * E.heatwave.penalty); event = '🦠 熱波による害虫発生で生産量が減少。';
-  } else if (state.precipitation > E.rain.precipThreshold && Math.random() < E.rain.chance) {
+  } else if (state.precipitation > E.rain.precipThreshold && gameRandom() < E.rain.chance) {
     production = Math.round(production * E.rain.bonus); event = '☔ 恵みの雨により生産量が増加。';
-  } else if (Math.random() < E.random.chance) {
-    const r = Math.random();
+  } else if (gameRandom() < E.random.chance) {
+    const r = gameRandom();
     if (r < E.random.sandstorm.chance) { production = Math.round(production * E.random.sandstorm.penalty); event = '🌪️ 砂嵐が発生し、植生が損傷。'; }
     else if (r < E.random.sandstorm.chance + E.random.commsFailure.chance) { elements.ndviValue.textContent = '？'; event = '🛰️ 衛星通信障害 — 一部データが欠落。'; }
     else { state.envScore = Math.max(0, state.envScore - E.random.industrialPollution.penalty); event = '🏭 近隣の工業活動により環境スコア低下。'; }
@@ -220,7 +226,7 @@ function executeTurn() {
   state.envScore = Math.max(0, Math.min(100, state.envScore + envChange));
 
   // 技術ポイント
-  let techGain = Math.round(tech / C.technology.techGainDivisor + Math.random() * (tech / C.technology.techGainRandomDivisor));
+  let techGain = Math.round(tech / C.technology.techGainDivisor + gameRandom() * (tech / C.technology.techGainRandomDivisor));
   if (state.unlocked.agriBoost) techGain = Math.round(techGain * C.technology.agriBoostMultiplier);
   state.techPoints += techGain;
 
@@ -271,7 +277,8 @@ function executeTurn() {
   // 次ターンへ
   elements.executeButton.disabled = true;
   setTimeout(() => {
-    elements.executeButton.disabled = false;
-    nextTurn();
+    const hasNextTurn = nextTurn();
+    state.isTurnProcessing = false;
+    if (hasNextTurn && typeof updateRemainingBudget === 'function') updateRemainingBudget();
   }, 1100);
 }

@@ -2,10 +2,22 @@
 const $ = s => document.querySelector(s);
 const elements = {
   startScreen: $('#start-screen'),
+  playerNameInput: $('#player-name-input'),
+  modeSelect: $('#mode-select'),
+  modeHelper: $('#mode-helper'),
   countrySelectRadios: document.getElementsByName('country'),
   budgetInput: $('#budget-input'),
   yearSelect: $('#year-select'),
   challengeSelect: $('#challenge-select'),
+  competitionCard: $('#competition-card'),
+  competitionEventName: $('#competition-event-name'),
+  competitionEventDescription: $('#competition-event-description'),
+  competitionStatus: $('#competition-status'),
+  competitionEventSummary: $('#competition-event-summary'),
+  refreshLeaderboardButton: $('#refresh-leaderboard-button'),
+  leaderboardPlayerBest: $('#leaderboard-player-best'),
+  leaderboardList: $('#leaderboard-list'),
+  leaderboardEmpty: $('#leaderboard-empty'),
   startButton: $('#start-button'),
   startError: $('#start-error'),
 
@@ -13,6 +25,7 @@ const elements = {
 
   header: $('#main-header'),
   selectedCountry: $('#selected-country'),
+  sessionSummary: $('#session-summary'),
   challengeBadge: $('#challenge-badge'),
   gameContainer: $('#game-container'),
 
@@ -77,6 +90,8 @@ const elements = {
   finalTech: $('#final-tech'),
   finalChallenge: $('#final-challenge'),
   finalScore: $('#final-score'),
+  finalCompetitionStatus: $('#final-competition-status'),
+  retrySubmitScore: $('#retry-submit-score'),
   replayButton: $('#replay-button'),
   downloadLog: $('#download-log'),
   unlockList: $('#unlock-list')
@@ -116,6 +131,7 @@ function pushUnlock(text) {
 
 function renderUI() {
   elements.turnCounter.textContent = state.turn;
+  elements.maxTurns.textContent = state.turnLimit || TURN_COUNT;
   elements.budgetValue.textContent = formatUSD(state.budget);
   elements.totalFoodValue.textContent = formatUSD(state.totalFoodValue);
   elements.envScoreValue.textContent = state.envScore;
@@ -202,6 +218,9 @@ function updateRemainingBudget() {
   elements.remainingBudget.textContent = formatUSD(remaining);
   if (remaining < 0) {
     elements.allocationWarning.textContent = '予算オーバーです！';
+    elements.executeButton.disabled = true;
+  } else if (state.isTurnProcessing) {
+    elements.allocationWarning.textContent = 'ターン処理中です...';
     elements.executeButton.disabled = true;
   } else {
     elements.allocationWarning.textContent = '';
@@ -391,15 +410,25 @@ function downloadHistory() {
   const challengeInfo = CHALLENGES[state.challenge] || CHALLENGES.free;
   const payload = {
     meta: {
+      mode: state.mode || 'solo',
+      playerId: state.playerId || null,
+      playerName: state.playerName || '',
       countryKey: state.countryKey,
       countryName: country.name || '-',
       missionYear: state.year ? 2000 + parseInt(state.year, 10) : null,
       startingBudget: state.initialBudget,
       remainingBudget: state.budget,
+      finalScore: state.finalScore || 0,
       turnsPlayed: state.history.length,
-      turnLimit: TURN_COUNT,
+      turnLimit: state.turnLimit || TURN_COUNT,
       totalFoodValue: state.totalFoodValue,
       skillUsed: state.skillUsed,
+      competition: state.mode === 'competition' ? {
+        eventId: state.competitionEventId,
+        eventName: state.competitionEventName,
+        seed: state.competitionSeed,
+        simulationVersion: state.simulationVersion
+      } : null,
       challenge: {
         key: state.challenge,
         name: challengeInfo.name,
@@ -413,7 +442,10 @@ function downloadHistory() {
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'terra_farm_log.json';
+  const suffix = state.mode === 'competition' && state.competitionEventId
+    ? `competition_${state.competitionEventId}`
+    : 'solo';
+  a.download = `terra_farm_${suffix}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
 }

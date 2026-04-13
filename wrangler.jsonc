@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "terra-farm",
+  "pages_build_output_dir": ".",
+  "compatibility_date": "2026-04-13",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "terra-farm",
+      "database_id": "00000000-0000-0000-0000-000000000001",
+      "preview_database_id": "00000000-0000-0000-0000-000000000001",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
