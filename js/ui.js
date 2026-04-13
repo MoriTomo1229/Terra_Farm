@@ -1,9 +1,12 @@
 // ==================== DOM要素 ====================
 const $ = s => document.querySelector(s);
+const THEME_STORAGE_KEY = 'terra_farm_theme';
 const elements = {
   startScreen: $('#start-screen'),
   playerNameInput: $('#player-name-input'),
   modeSelect: $('#mode-select'),
+  themeSelect: $('#theme-select'),
+  themeSelectHeader: $('#theme-select-header'),
   modeHelper: $('#mode-helper'),
   countrySelectRadios: document.getElementsByName('country'),
   budgetInput: $('#budget-input'),
@@ -127,6 +130,32 @@ function pushUnlock(text) {
   const li = document.createElement('li');
   li.textContent = text;
   elements.unlockList.appendChild(li);
+}
+
+function getStoredTheme() {
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    return stored === 'light' ? 'light' : 'dark';
+  } catch (_) {
+    return 'dark';
+  }
+}
+
+function syncThemeControls(theme) {
+  if (elements.themeSelect) elements.themeSelect.value = theme;
+  if (elements.themeSelectHeader) elements.themeSelectHeader.value = theme;
+}
+
+function applyTheme(theme, { persist = true } = {}) {
+  const nextTheme = theme === 'light' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', nextTheme);
+  syncThemeControls(nextTheme);
+  if (!persist) return;
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+  } catch (_) {
+    // localStorageが使えない環境では永続化を諦める
+  }
 }
 
 function renderUI() {

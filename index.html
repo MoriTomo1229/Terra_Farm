@@ -3,75 +3,94 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Terra Farm — 完全拡張版 (Fixed)</title>
+  <title>Terra Farm</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
+<body data-theme="dark">
   <div class="background"></div>
 
   <!-- ==================== スタート画面 ==================== -->
   <div id="start-screen" class="panel start-panel">
     <div class="start-header">
       <img src="images/nasa_logo.png" alt="NASA Logo" class="logo"/>
-      <div>
-        <h1>Terra Farm — 完全拡張版</h1>
-        <p class="subtitle">国を選択し、初期予算とミッション年を設定して開始してください。競争モードでは大会条件が固定されます。</p>
+      <div class="start-header-copy">
+        <p class="eyebrow">農業政策シミュレーション</p>
+        <h1>Terra Farm</h1>
+        <p class="subtitle">複雑な農業政策を整理し、限られた予算で生産性と持続可能性の両立を目指すシミュレーションです。</p>
+        <p class="start-lead">国、予算、年代、チャレンジ条件を決めてミッションを開始します。競争モードでは大会条件が固定されます。</p>
       </div>
     </div>
 
     <div class="start-meta-grid">
-      <div class="player-input">
+      <div class="player-input form-field">
         <label for="player-name-input">プレイヤー名:</label>
         <input id="player-name-input" type="text" maxlength="20" placeholder="例: TerraPlayer" aria-label="プレイヤー名入力">
       </div>
 
-      <div class="mode-select">
+      <div class="mode-select form-field">
         <label for="mode-select">プレイモード:</label>
         <select id="mode-select" aria-label="プレイモード選択">
           <option value="solo">通常プレイ</option>
           <option value="competition">競争モード</option>
         </select>
       </div>
+
+      <div class="theme-select form-field">
+        <label for="theme-select">表示テーマ:</label>
+        <select id="theme-select" aria-label="表示テーマ選択">
+          <option value="dark">ダーク</option>
+          <option value="light">ライト</option>
+        </select>
+      </div>
     </div>
     <p id="mode-helper" class="mode-helper">通常プレイでは国・予算・チャレンジを自由に設定できます。</p>
 
-    <div class="country-list" role="group" aria-label="国を選択">
+    <div class="field-block">
+      <div class="field-heading">
+        <p class="field-label">Mission Setup</p>
+        <h2>国を選択</h2>
+      </div>
+      <div class="country-list" role="group" aria-label="国を選択">
       <label class="country-option"><input type="radio" name="country" value="usa" checked> <span class="flag">🇺🇸</span> United States</label>
       <label class="country-option"><input type="radio" name="country" value="china"> <span class="flag">🇨🇳</span> China</label>
       <label class="country-option"><input type="radio" name="country" value="india"> <span class="flag">🇮🇳</span> India</label>
       <label class="country-option"><input type="radio" name="country" value="brazil"> <span class="flag">🇧🇷</span> Brazil</label>
       <label class="country-option"><input type="radio" name="country" value="egypt"> <span class="flag">🇪🇬</span> Egypt</label>
       <label class="country-option"><input type="radio" name="country" value="ireland"> <span class="flag">🇮🇪</span> Ireland</label>
+      </div>
     </div>
 
-    <div class="budget-input">
-      <label for="budget-input">初期予算:</label>
-      <input id="budget-input" type="text" placeholder="例: 200B or 500M" value="200B" aria-label="初期予算入力">
-    </div>
+    <div class="start-settings-grid">
+      <div class="budget-input form-field">
+        <label for="budget-input">初期予算:</label>
+        <input id="budget-input" type="text" placeholder="例: 200B or 500M" value="200B" aria-label="初期予算入力">
+      </div>
 
-    <div class="year-select" style="margin: 10px 0;">
-      <label for="year-select">ミッション年:</label>
-      <select id="year-select" style="padding: 8px; border-radius: 6px; border: none;">
-        <option value="01">2001</option>
-        <option value="02">2002</option>
-        <option value="03">2003</option>
-        <option value="04">2004</option>
-        <option value="05">2005</option>
-      </select>
-    </div>
+      <div class="year-select form-field">
+        <label for="year-select">ミッション年:</label>
+        <select id="year-select" aria-label="ミッション年選択">
+          <option value="01">2001</option>
+          <option value="02">2002</option>
+          <option value="03">2003</option>
+          <option value="04">2004</option>
+          <option value="05">2005</option>
+        </select>
+      </div>
 
-    <div class="challenge-select">
-      <label for="challenge-select">チャレンジ:</label>
-      <select id="challenge-select" aria-label="チャレンジ選択">
-        <option value="free">フリー（目標なし）</option>
-        <option value="env_guard">環境キーパー（最終環境スコア80以上）</option>
-        <option value="growth_drive">成長ドライブ（総収入を初期予算の1.8倍以上）</option>
-      </select>
+      <div class="challenge-select form-field">
+        <label for="challenge-select">チャレンジ:</label>
+        <select id="challenge-select" aria-label="チャレンジ選択">
+          <option value="free">フリー（目標なし）</option>
+          <option value="env_guard">環境キーパー（最終環境スコア80以上）</option>
+          <option value="growth_drive">成長ドライブ（総収入を初期予算の1.8倍以上）</option>
+        </select>
+      </div>
     </div>
 
     <section id="competition-card" class="competition-card panel" aria-live="polite">
       <div class="competition-card-header">
         <div>
+          <p class="field-label">Leaderboard Event</p>
           <h2 id="competition-event-name">競争モード</h2>
           <p id="competition-event-description" class="competition-event-description">固定シードの大会条件でランキングに挑戦できます。</p>
         </div>
@@ -102,15 +121,27 @@
   <header class="header panel" id="main-header" role="banner">
     <img src="images/nasa_logo.png" alt="NASA Logo" class="logo-small"/>
     <div class="title-block">
+      <p class="eyebrow">運営パネル</p>
       <h1 id="game-title">Terra Farm</h1>
       <div id="selected-country" class="selected-country"></div>
       <div id="session-summary" class="session-summary"></div>
       <div class="challenge-badge" id="challenge-badge" aria-live="polite">チャレンジ: -</div>
     </div>
+    <div class="header-settings">
+      <label for="theme-select-header">表示テーマ</label>
+      <select id="theme-select-header" aria-label="ゲーム画面の表示テーマ選択">
+        <option value="dark">ダーク</option>
+        <option value="light">ライト</option>
+      </select>
+    </div>
   </header>
 
-  <main id="game-container" class="panel" role="main" style="background:none; box-shadow:none; border:none;">
-    <div id="status-display" class="panel">
+  <main id="game-container" class="game-layout" role="main">
+    <div id="status-display" class="panel panel-section status-panel">
+      <div class="panel-heading">
+        <p class="panel-label">Current State</p>
+        <h2>現在の状況</h2>
+      </div>
       <p>ターン: <strong><span id="turn-counter">0</span>/<span id="max-turns">10</span></strong></p>
       <p>予算: <strong id="budget-value">$0</strong></p>
       <p>総収入: <strong id="total-food-value">$0</strong></p>
@@ -168,8 +199,11 @@
       </div>
     </div>
 
-    <div class="panel">
-      <h3>政策と投資</h3>
+    <div class="panel panel-section controls-panel">
+      <div class="panel-heading">
+        <p class="panel-label">Investment Plan</p>
+        <h2>政策と投資</h2>
+      </div>
       <div class="choice-row">
         <label for="crop-select">作物選択: </label>
         <select id="crop-select"></select>
@@ -206,9 +240,9 @@
       <div id="allocation-warning" class="warning" role="alert"></div>
 
       <div class="buttons">
-        <button id="execute-turn-button">ターンを実行</button>
-        <button id="auto-allocate-button" class="accent">自動配分</button>
-        <button id="special-skill">国家スキル</button>
+        <button id="execute-turn-button" class="button-primary">ターンを実行</button>
+        <button id="auto-allocate-button" class="button-secondary">自動配分</button>
+        <button id="special-skill" class="button-ghost">国家スキル</button>
       </div>
 
       <div class="small-panel panel">
@@ -217,8 +251,11 @@
       </div>
     </div>
 
-    <div class="panel">
-      <h3>レポート</h3>
+    <div class="panel panel-section report-panel">
+      <div class="panel-heading">
+        <p class="panel-label">Turn Report</p>
+        <h2>レポート</h2>
+      </div>
       <p class="result" id="turn-result-text">未実行</p>
       <p class="event" id="event-text">-</p>
       <p class="un-report" id="un-report">-</p>
@@ -255,7 +292,7 @@
       <hr>
       <p>最終スコア: <strong id="final-score"></strong></p>
       <p id="final-competition-status" class="competition-final-status"></p>
-      <div class="modal-actions" style="margin-top: 16px;">
+      <div class="modal-actions">
         <button id="retry-submit-score" type="button" hidden>スコアを再送信</button>
         <button id="replay-button">もう一度プレイ</button>
         <button id="download-log">ログをダウンロード</button>
