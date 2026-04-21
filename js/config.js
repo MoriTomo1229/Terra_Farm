@@ -20,6 +20,26 @@ const CROPS = {
 const ERAS = ['石器時代','青銅器時代','鉄器時代','中世','産業革命','近代','宇宙時代'];
 const TURN_COUNT = 10;
 const MAP_SIZE = 100;
+const PLAY_MODES = {
+  solo: {
+    key: 'solo',
+    name: '通常プレイ',
+    description: '国・予算・チャレンジを自由に設定できます。',
+    logName: '通常'
+  },
+  frontier: {
+    key: 'frontier',
+    name: 'フロンティア・ラボ',
+    description: '高リスク気候下で、レジリエンスと再生農業の両立を狙う実験モードです。',
+    logName: 'フロンティア'
+  },
+  competition: {
+    key: 'competition',
+    name: '競争モード',
+    description: '固定シードの大会条件でランキングに挑戦できます。',
+    logName: '競争'
+  }
+};
 const CHALLENGES = {
   free: {
     key: 'free',
@@ -38,6 +58,12 @@ const CHALLENGES = {
     name: '成長ドライブ',
     description: '総収入を初期予算の1.8倍以上にする',
     goal: '総収入を初期予算の1.8倍以上'
+  },
+  regen_loop: {
+    key: 'regen_loop',
+    name: '再生ループ',
+    description: '環境・NDVI・レジリエンスを同時に回復させる',
+    goal: '環境78以上 / 初期NDVI+0.03 / レジリエンス70以上'
   }
 };
 
@@ -123,6 +149,22 @@ const GAME_CONFIG = {
       industrialPollution: { penalty: 3 },
     },
     monsoonMitigation: 0.6,
+  },
+  frontier: {
+    turnLimit: 12,
+    initialEnvScore: 58,
+    temperatureBonus: 3,
+    temperatureRamp: 2,
+    precipitationMultiplier: 0.82,
+    precipitationPenalty: 3,
+    moisturePenalty: 12,
+    moistureRamp: 8,
+    riskBonus: 10,
+    adaptationIrrigationRatio: 0.28,
+    adaptationTechRatio: 0.24,
+    resilienceGoal: 70,
+    envGoal: 78,
+    ndviGainGoal: 0.03
   },
   environment: {
     fertPenalty: 14,

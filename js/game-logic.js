@@ -5,11 +5,87 @@ function calculateCurrentAverages() {
   state.avgNdvi = valid.reduce((s,v)=>s+v,0) / (valid.length || 1);
 }
 
+function clampNumber(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function calculateMapAverage(mapData) {
+  const valid = mapData.flat().filter(v => v !== null && Number.isFinite(v));
+  return valid.reduce((s, v) => s + v, 0) / (valid.length || 1);
+}
+
+function calculateResilienceScore() {
+  const baseline = Number.isFinite(state.initialAvgNdvi) && state.initialAvgNdvi > 0
+    ? state.initialAvgNdvi
+    : state.avgNdvi;
+  const ndviScore = clampNumber(50 + ((state.avgNdvi - baseline) * 220), 0, 100);
+  const techScore = clampNumber(state.techPoints / 25, 0, 100);
+  const liquidityScore = state.initialBudget > 0
+    ? clampNumber((state.budget / state.initialBudget) * 100, 0, 100)
+    : 50;
+  const climateBuffer = clampNumber(100 - (state.climateRisk || 0), 0, 100);
+
+  return Math.round(
+    (state.envScore * 0.32) +
+    (ndviScore * 0.24) +
+    (techScore * 0.16) +
+    (liquidityScore * 0.1) +
+    (climateBuffer * 0.18)
+  );
+}
+
+function updateClimatePulse() {
+  const dryness = clampNumber(100 - (state.soilMoisture || 0), 0, 100);
+  const heat = clampNumber(((state.temperature || 0) - 24) * 4, 0, 100);
+  const rainDeficit = clampNumber(30 - (state.precipitation || 0), 0, 30) * 2;
+  const envPressure = clampNumber(70 - state.envScore, 0, 70) * 0.45;
+  const frontierBonus = state.mode === 'frontier' ? GAME_CONFIG.frontier.riskBonus : 0;
+
+  state.climateRisk = clampNumber(Math.round(
+    (dryness * 0.32) +
+    (heat * 0.28) +
+    (rainDeficit * 0.18) +
+    envPressure +
+    frontierBonus
+  ), 0, 100);
+  state.resilienceScore = calculateResilienceScore();
+
+  const tags = [];
+  if (dryness >= 55) tags.push('乾燥圧');
+  if (heat >= 45) tags.push('高温');
+  if (rainDeficit >= 32) tags.push('降水不足');
+  if (state.envScore < 60) tags.push('環境低下');
+  if (state.resilienceScore < 55) tags.push('再生力不足');
+  if (!tags.length) tags.push('安定観測');
+
+  let label = '安定';
+  let message = '気候条件は管理可能です。収益と環境のバランスを維持してください。';
+  if (state.climateRisk >= 75) {
+    label = '危機';
+    message = '気候リスクが高い状態です。灌漑と技術投資で損失を抑え、肥料偏重を避けてください。';
+  } else if (state.climateRisk >= 55) {
+    label = '警戒';
+    message = '気候ショックの兆候があります。灌漑比率を上げるとレジリエンスを維持しやすくなります。';
+  } else if (state.climateRisk >= 35) {
+    label = '注意';
+    message = '一部の気候条件に負荷があります。技術投資で次ターン以降の対応力を高められます。';
+  }
+
+  state.climatePulse = { label, message, tags };
+}
+
 function generateTurnConditions() {
   const country = COUNTRIES[state.countryKey];
   state.soilMoisture = Math.round((0.4 + (gameRandom()*0.45)) * 100);
   state.precipitation = Math.round(Math.max(0, (gameRandom()*60) * (country.climate==='arid'?0.4:1.0)));
   state.temperature = Math.round(15 + (gameRandom()*20) + (country.climate==='cool'?-5:0) + (country.climate==='tropical'?5:0));
+  if (state.mode === 'frontier') {
+    const cfg = GAME_CONFIG.frontier;
+    const phase = clampNumber((state.turn - 1) / Math.max(1, (state.turnLimit || cfg.turnLimit) - 1), 0, 1);
+    state.soilMoisture = Math.max(8, Math.round(state.soilMoisture - cfg.moisturePenalty - (cfg.moistureRamp * phase)));
+    state.precipitation = Math.max(0, Math.round((state.precipitation * cfg.precipitationMultiplier) - cfg.precipitationPenalty));
+    state.temperature = Math.round(state.temperature + cfg.temperatureBonus + (cfg.temperatureRamp * phase));
+  }
 }
 
 // ==================== 国家スキル ====================
@@ -76,7 +152,9 @@ function pushChartPoint(revenue) {
     revenue,
     avgNdvi: Number(state.avgNdvi.toFixed(3)),
     envScore: state.envScore,
-    techPoints: state.techPoints
+    techPoints: state.techPoints,
+    resilienceScore: state.resilienceScore,
+    climateRisk: state.climateRisk
   });
   const MAX_POINTS = 12;
   if (state.chartData.length > MAX_POINTS) state.chartData.shift();
@@ -87,10 +165,17 @@ function updateChallengeProgress() {
     state.challengeStatus = 'success';
     return;
   }
+  if (typeof updateClimatePulse === 'function') updateClimatePulse();
   if (state.challenge === 'env_guard') {
     state.challengeStatus = state.envScore >= 80 ? 'success' : 'pending';
   } else if (state.challenge === 'growth_drive') {
     state.challengeStatus = state.totalFoodValue >= state.initialBudget * 1.8 ? 'success' : 'pending';
+  } else if (state.challenge === 'regen_loop') {
+    const cfg = GAME_CONFIG.frontier;
+    const recoveredNdvi = state.avgNdvi >= state.initialAvgNdvi + cfg.ndviGainGoal;
+    const recoveredEnv = state.envScore >= cfg.envGoal;
+    const resilient = state.resilienceScore >= cfg.resilienceGoal;
+    state.challengeStatus = recoveredNdvi && recoveredEnv && resilient ? 'success' : 'pending';
   } else {
     state.challengeStatus = 'pending';
   }
@@ -101,10 +186,17 @@ function finalizeChallengeOutcome() {
     state.challengeStatus = 'success';
     return;
   }
+  if (typeof updateClimatePulse === 'function') updateClimatePulse();
   if (state.challenge === 'env_guard') {
     state.challengeStatus = state.envScore >= 80 ? 'success' : 'failed';
   } else if (state.challenge === 'growth_drive') {
     state.challengeStatus = state.totalFoodValue >= state.initialBudget * 1.8 ? 'success' : 'failed';
+  } else if (state.challenge === 'regen_loop') {
+    const cfg = GAME_CONFIG.frontier;
+    const recoveredNdvi = state.avgNdvi >= state.initialAvgNdvi + cfg.ndviGainGoal;
+    const recoveredEnv = state.envScore >= cfg.envGoal;
+    const resilient = state.resilienceScore >= cfg.resilienceGoal;
+    state.challengeStatus = recoveredNdvi && recoveredEnv && resilient ? 'success' : 'failed';
   } else {
     state.challengeStatus = 'failed';
   }
@@ -217,6 +309,18 @@ function executeTurn() {
     else { state.envScore = Math.max(0, state.envScore - E.random.industrialPollution.penalty); event = '🏭 近隣の工業活動により環境スコア低下。'; }
   }
 
+  if (state.mode === 'frontier') {
+    const cfg = GAME_CONFIG.frontier;
+    const adaptationRatio = (irri + tech) / Math.max(fert + irri + tech, 1);
+    const underPrepared = adaptationRatio < (cfg.adaptationIrrigationRatio + cfg.adaptationTechRatio);
+    if (state.climateRisk >= 70 && underPrepared && gameRandom() < 0.42) {
+      production = Math.round(production * 0.84);
+      state.envScore = Math.max(0, state.envScore - 2);
+      const shockText = 'フロンティア気候ショックで水ストレスが拡大。';
+      event = event ? `${event} ${shockText}` : shockText;
+    }
+  }
+
   const revenue = Math.round(production * crop.basePrice);
 
   // 環境スコア変化
@@ -235,6 +339,7 @@ function executeTurn() {
   // 予算更新
   state.budget = Math.max(0, Math.round(state.budget - (fert + irri + tech) + revenue));
   state.totalFoodValue += revenue;
+  if (typeof updateClimatePulse === 'function') updateClimatePulse();
   pushChartPoint(revenue);
   updateChallengeProgress();
 
@@ -250,6 +355,9 @@ function executeTurn() {
     avgNdvi: Number(state.avgNdvi.toFixed(3)),
     envScore: state.envScore,
     techPoints: state.techPoints,
+    resilienceScore: state.resilienceScore,
+    climateRisk: state.climateRisk,
+    climatePulse: state.climatePulse?.label || '',
     revenue,
     totalFoodValue: state.totalFoodValue,
     budgetRemaining: state.budget,

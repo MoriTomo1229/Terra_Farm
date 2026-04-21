@@ -19,6 +19,10 @@ let state = {
   eraIndex: 0,
   customPreset: null,
   chartData: [],
+  initialAvgNdvi: 0,
+  resilienceScore: 50,
+  climateRisk: 0,
+  climatePulse: null,
   baseMapPotential: [],   // 初期NDVI（不変）
   currentMapNdvi: [],     // 現在NDVI（更新）
   avgNdvi: 0,
