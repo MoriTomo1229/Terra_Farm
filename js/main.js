@@ -116,6 +116,9 @@ async function startGame(countryKey, startingBudget, year, challengeKey, options
       resilienceScore: 50,
       climateRisk: 0,
       climatePulse: null,
+      soilMoisture: 0,
+      precipitation: 0,
+      temperature: 0,
       baseMapPotential: scaledMapData,
       currentMapNdvi: JSON.parse(JSON.stringify(scaledMapData)),
       avgNdvi: 0,
@@ -143,7 +146,7 @@ async function startGame(countryKey, startingBudget, year, challengeKey, options
     elements.selectedCountry.innerHTML = `<span class="flag">${c.flag}</span> <strong>${c.name} (${displayYear}) — Skill: ${c.skill}</strong>`;
     elements.maxTurns.textContent = state.turnLimit;
     const challengeInfo = CHALLENGES[challengeKey] || CHALLENGES.free;
-    elements.challengeBadge.textContent = `チャレンジ: ${challengeInfo.name} — ${challengeInfo.goal}`;
+    elements.challengeBadge.textContent = `チャレンジ: ${challengeInfo.name} — ${resolveChallengeGoal(challengeKey)}`;
     renderSessionSummary();
     renderCompetitionFinalStatus('', '');
     updateChallengeProgressUI();
@@ -187,7 +190,7 @@ function endGame() {
   const challengeInfo = CHALLENGES[state.challenge] || CHALLENGES.free;
   if (state.challenge !== 'free') {
     const statusText = state.challengeStatus === 'success' ? '達成！' : '未達成';
-    elements.finalChallenge.textContent = `チャレンジ「${challengeInfo.name}」: ${statusText} (${challengeInfo.goal})`;
+    elements.finalChallenge.textContent = `チャレンジ「${challengeInfo.name}」: ${statusText} (${resolveChallengeGoal(state.challenge)})`;
   } else {
     elements.finalChallenge.textContent = '';
   }

@@ -63,9 +63,20 @@ const CHALLENGES = {
     key: 'regen_loop',
     name: '再生ループ',
     description: '環境・NDVI・レジリエンスを同時に回復させる',
-    goal: '環境78以上 / 初期NDVI+0.03 / レジリエンス70以上'
+    goal: null  // GAME_CONFIG.frontier から動的解決
   }
 };
+
+// CHALLENGES の goal 文字列を解決する（regen_loop は GAME_CONFIG.frontier の実値から生成）
+function resolveChallengeGoal(challengeKey) {
+  const info = CHALLENGES[challengeKey];
+  if (!info) return '';
+  if (challengeKey === 'regen_loop') {
+    const cfg = GAME_CONFIG.frontier;
+    return `環境${cfg.envGoal}以上 / 初期NDVI+${cfg.ndviGainGoal} / レジリエンス${cfg.resilienceGoal}以上`;
+  }
+  return info.goal || '';
+}
 
 // ==================== ゲームバランス設定 ====================
 const GAME_CONFIG = {
@@ -165,6 +176,9 @@ const GAME_CONFIG = {
     resilienceGoal: 70,
     envGoal: 78,
     ndviGainGoal: 0.03
+  },
+  climatePulse: {
+    riskLevels: { crisis: 75, warning: 55, caution: 35 }
   },
   environment: {
     fertPenalty: 14,

@@ -1,6 +1,7 @@
 // ==================== DOM要素 ====================
 const $ = s => document.querySelector(s);
 const THEME_STORAGE_KEY = 'terra_farm_theme';
+const VALID_THEMES = ['dark', 'light', 'signal'];
 const elements = {
   startScreen: $('#start-screen'),
   playerNameInput: $('#player-name-input'),
@@ -133,12 +134,16 @@ function showWorldNews() {
 }
 
 function generateUNReport() {
-  if (state.mode === 'frontier' && state.resilienceScore < 45) return "国連レポート: フロンティア地域の再生力が不足しています。灌漑と技術投資の下支えが必要です。";
-  if (state.mode === 'frontier' && state.resilienceScore >= 75) return "国連レポート: 高リスク気候下でも農地の回復力が定着しつつあります。";
-  if (state.envScore < 35) return "🌍 国連レポート: 環境悪化が深刻です。持続可能性の再考を推奨します。";
-  if (state.techPoints > GAME_CONFIG.technology.unlocks.orbitalNet) return "🚀 国連レポート: 技術革新が農業の効率化に顕著な効果。";
-  if (state.avgNdvi > 0.65) return "🌱 国連レポート: 植生指数は良好。安定的な食料供給が見込めます。";
-  return "📊 国連レポート: おおむね安定していますが、長期的な気候リスクに注意が必要です。";
+  let base = "📊 国連レポート: おおむね安定していますが、長期的な気候リスクに注意が必要です。";
+  if (state.envScore < 35) base = "🌍 国連レポート: 環境悪化が深刻です。持続可能性の再考を推奨します。";
+  else if (state.techPoints > GAME_CONFIG.technology.unlocks.orbitalNet) base = "🚀 国連レポート: 技術革新が農業の効率化に顕著な効果。";
+  else if (state.avgNdvi > 0.65) base = "🌱 国連レポート: 植生指数は良好。安定的な食料供給が見込めます。";
+
+  if (state.mode === 'frontier') {
+    if (state.resilienceScore < 45) return base + " フロンティア地域の再生力が不足しています。灌漑と技術投資の下支えが必要です。";
+    if (state.resilienceScore >= 75) return base + " 高リスク気候下でも農地の回復力が定着しつつあります。";
+  }
+  return base;
 }
 
 function pushUnlock(text) {
@@ -150,7 +155,7 @@ function pushUnlock(text) {
 function getStoredTheme() {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    return ['dark', 'light', 'signal'].includes(stored) ? stored : 'dark';
+    return VALID_THEMES.includes(stored) ? stored : 'dark';
   } catch (_) {
     return 'dark';
   }
@@ -162,7 +167,7 @@ function syncThemeControls(theme) {
 }
 
 function applyTheme(theme, { persist = true } = {}) {
-  const nextTheme = ['dark', 'light', 'signal'].includes(theme) ? theme : 'dark';
+  const nextTheme = VALID_THEMES.includes(theme) ? theme : 'dark';
   document.body.setAttribute('data-theme', nextTheme);
   syncThemeControls(nextTheme);
   if (!persist) return;
@@ -281,16 +286,17 @@ function clampPercent(value) {
 }
 
 function getRiskLabel(score) {
-  if (score >= 75) return '危機';
-  if (score >= 55) return '警戒';
-  if (score >= 35) return '注意';
+  const levels = (GAME_CONFIG.climatePulse && GAME_CONFIG.climatePulse.riskLevels) || { crisis: 75, warning: 55, caution: 35 };
+  if (score >= levels.crisis) return '危機';
+  if (score >= levels.warning) return '警戒';
+  if (score >= levels.caution) return '注意';
   return '安定';
 }
 
 function renderImpactPreview() {
   if (!elements.previewMix || !elements.previewRisk || !elements.previewOutcome || !elements.previewGuidance) return;
   const budget = Number(state.budget) || 0;
-  if (!budget || !state.countryKey) {
+  if (!state.countryKey) {
     elements.previewMix.textContent = '未設定';
     elements.previewRisk.textContent = '-';
     elements.previewOutcome.textContent = '-';
@@ -306,7 +312,7 @@ function renderImpactPreview() {
   const fertPct = clampPercent((fert / safeTotal) * 100);
   const irriPct = clampPercent((irri / safeTotal) * 100);
   const techPct = clampPercent((tech / safeTotal) * 100);
-  const spendPct = clampPercent((total / budget) * 100);
+  const spendPct = budget > 0 ? clampPercent((total / budget) * 100) : (total > 0 ? 100 : 0);
   const riskPressure = state.climateRisk || 0;
   const adaptationCoverage = Math.min(100, Math.round((irriPct * 0.55) + (techPct * 0.45)));
   const riskAfterPolicy = Math.max(0, Math.round(riskPressure - adaptationCoverage * 0.28));
@@ -319,14 +325,19 @@ function renderImpactPreview() {
   let outcome = total ? 'バランス' : '待機';
   if (fertPct >= 50 && techPct < 25) outcome = '短期収益';
   else if (techPct >= 45) outcome = '技術蓄積';
-  else if (irriPct >= 35 && state.climateRisk >= 45) outcome = '気候適応';
+  else if (irriPct >= 35 && riskAfterPolicy >= 45) outcome = '気候適応';
   else if (fertPct <= 35 && techPct >= 25 && irriPct >= 25) outcome = '再生バランス';
   else if (spendPct < 20) outcome = '温存';
   elements.previewOutcome.textContent = outcome;
 
+  // executeTurn と同じ比率式で気候ショック耐性を判定
+  const adaptationRatio = total > 0 ? (irri + tech) / total : 0;
+  const frontCfg = GAME_CONFIG.frontier;
+  const underPrepared = adaptationRatio < (frontCfg.adaptationIrrigationRatio + frontCfg.adaptationTechRatio);
+
   if (total > budget) {
     elements.previewGuidance.textContent = '予算を超過しています。自動配分かプリセットで比率を調整してください。';
-  } else if (state.mode === 'frontier' && adaptationCoverage < 35) {
+  } else if (state.mode === 'frontier' && underPrepared) {
     elements.previewGuidance.textContent = 'フロンティアでは灌漑と技術の合計比率が低く、次ターンの気候ショックに弱くなります。';
   } else if (state.mode === 'frontier' && outcome === '再生バランス') {
     elements.previewGuidance.textContent = '再生ループ向きの配分です。収益を確保しながら環境とレジリエンスを戻しやすい構成です。';
@@ -439,7 +450,7 @@ function updateCustomPresetLabel() {
 function updateChallengeProgressUI() {
   const info = CHALLENGES[state.challenge] || CHALLENGES.free;
   if (elements.challengeBadge) {
-    elements.challengeBadge.textContent = `チャレンジ: ${info.name} — ${info.goal}`;
+    elements.challengeBadge.textContent = `チャレンジ: ${info.name} — ${resolveChallengeGoal(state.challenge)}`;
   }
   if (!elements.challengeProgress) return;
   const chip = elements.challengeProgress;
@@ -457,7 +468,7 @@ function updateChallengeProgressUI() {
   } else {
     chip.classList.add('chip-pending');
     if (state.challenge === 'regen_loop') {
-      const ndviDelta = state.initialAvgNdvi
+      const ndviDelta = Number.isFinite(state.initialAvgNdvi)
         ? (state.avgNdvi - state.initialAvgNdvi).toFixed(3)
         : '0.000';
       text = `環${state.envScore} / NDVI ${ndviDelta} / 再${state.resilienceScore}`;
@@ -575,7 +586,7 @@ function downloadHistory() {
       challenge: {
         key: state.challenge,
         name: challengeInfo.name,
-        goal: challengeInfo.goal,
+        goal: resolveChallengeGoal(state.challenge),
         status: state.challengeStatus
       }
     },
