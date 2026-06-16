@@ -1,6 +1,7 @@
 // ==================== DOM要素 ====================
 const $ = s => document.querySelector(s);
 const THEME_STORAGE_KEY = 'terra_farm_theme';
+const VALID_THEMES = ['dark', 'light', 'signal'];
 const elements = {
   startScreen: $('#start-screen'),
   playerNameInput: $('#player-name-input'),
@@ -30,6 +31,11 @@ const elements = {
   selectedCountry: $('#selected-country'),
   sessionSummary: $('#session-summary'),
   challengeBadge: $('#challenge-badge'),
+  missionPulse: $('#mission-pulse'),
+  missionPulseGuidance: $('#mission-pulse-guidance'),
+  pulseRisk: $('#pulse-risk'),
+  pulseResilience: $('#pulse-resilience'),
+  pulseFocus: $('#pulse-focus'),
   gameContainer: $('#game-container'),
 
   turnCounter: $('#turn-counter'),
@@ -37,6 +43,8 @@ const elements = {
   budgetValue: $('#budget-value'),
   totalFoodValue: $('#total-food-value'),
   envScoreValue: $('#env-score-value'),
+  resilienceValue: $('#resilience-value'),
+  climateRiskValue: $('#climate-risk-value'),
   eraValue: $('#era-value'),
   techPointsValue: $('#tech-points-value'),
   challengeProgress: $('#challenge-progress'),
@@ -57,6 +65,10 @@ const elements = {
   techValue: $('#tech-value'),
   remainingBudget: $('#remaining-budget'),
   allocationWarning: $('#allocation-warning'),
+  previewMix: $('#preview-mix'),
+  previewRisk: $('#preview-risk'),
+  previewOutcome: $('#preview-outcome'),
+  previewGuidance: $('#preview-guidance'),
   executeButton: $('#execute-turn-button'),
   autoAllocateButton: $('#auto-allocate-button'),
   specialSkillButton: $('#special-skill'),
@@ -70,6 +82,8 @@ const elements = {
   turnResultText: $('#turn-result-text'),
   eventText: $('#event-text'),
   unReport: $('#un-report'),
+  climatePulseText: $('#climate-pulse-text'),
+  climatePulseTags: $('#climate-pulse-tags'),
   log: $('#log'),
   historyPanel: $('#history-panel'),
   historyBody: $('#history-body'),
@@ -120,10 +134,16 @@ function showWorldNews() {
 }
 
 function generateUNReport() {
-  if (state.envScore < 35) return "🌍 国連レポート: 環境悪化が深刻です。持続可能性の再考を推奨します。";
-  if (state.techPoints > GAME_CONFIG.technology.unlocks.orbitalNet) return "🚀 国連レポート: 技術革新が農業の効率化に顕著な効果。";
-  if (state.avgNdvi > 0.65) return "🌱 国連レポート: 植生指数は良好。安定的な食料供給が見込めます。";
-  return "📊 国連レポート: おおむね安定していますが、長期的な気候リスクに注意が必要です。";
+  let base = "📊 国連レポート: おおむね安定していますが、長期的な気候リスクに注意が必要です。";
+  if (state.envScore < 35) base = "🌍 国連レポート: 環境悪化が深刻です。持続可能性の再考を推奨します。";
+  else if (state.techPoints > GAME_CONFIG.technology.unlocks.orbitalNet) base = "🚀 国連レポート: 技術革新が農業の効率化に顕著な効果。";
+  else if (state.avgNdvi > 0.65) base = "🌱 国連レポート: 植生指数は良好。安定的な食料供給が見込めます。";
+
+  if (state.mode === 'frontier') {
+    if (state.resilienceScore < 45) return base + " フロンティア地域の再生力が不足しています。灌漑と技術投資の下支えが必要です。";
+    if (state.resilienceScore >= 75) return base + " 高リスク気候下でも農地の回復力が定着しつつあります。";
+  }
+  return base;
 }
 
 function pushUnlock(text) {
@@ -135,7 +155,7 @@ function pushUnlock(text) {
 function getStoredTheme() {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    return stored === 'light' ? 'light' : 'dark';
+    return VALID_THEMES.includes(stored) ? stored : 'dark';
   } catch (_) {
     return 'dark';
   }
@@ -147,7 +167,7 @@ function syncThemeControls(theme) {
 }
 
 function applyTheme(theme, { persist = true } = {}) {
-  const nextTheme = theme === 'light' ? 'light' : 'dark';
+  const nextTheme = VALID_THEMES.includes(theme) ? theme : 'dark';
   document.body.setAttribute('data-theme', nextTheme);
   syncThemeControls(nextTheme);
   if (!persist) return;
@@ -164,6 +184,8 @@ function renderUI() {
   elements.budgetValue.textContent = formatUSD(state.budget);
   elements.totalFoodValue.textContent = formatUSD(state.totalFoodValue);
   elements.envScoreValue.textContent = state.envScore;
+  if (elements.resilienceValue) elements.resilienceValue.textContent = state.resilienceScore;
+  if (elements.climateRiskValue) elements.climateRiskValue.textContent = state.climateRisk;
   elements.eraValue.textContent = ERAS[state.eraIndex];
   elements.techPointsValue.textContent = state.techPoints.toLocaleString();
   elements.cropValue.textContent = CROPS[elements.cropSelect.value]?.name || '-';
@@ -175,6 +197,7 @@ function renderUI() {
   renderMap();
   renderHistory();
   renderTrendChart();
+  renderClimatePulseUI();
   updateCustomPresetLabel();
   updateRemainingBudget();
 }
@@ -255,6 +278,98 @@ function updateRemainingBudget() {
     elements.allocationWarning.textContent = '';
     elements.executeButton.disabled = false;
   }
+  renderImpactPreview();
+}
+
+function clampPercent(value) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function getRiskLabel(score) {
+  const levels = (GAME_CONFIG.climatePulse && GAME_CONFIG.climatePulse.riskLevels) || { crisis: 75, warning: 55, caution: 35 };
+  if (score >= levels.crisis) return '危機';
+  if (score >= levels.warning) return '警戒';
+  if (score >= levels.caution) return '注意';
+  return '安定';
+}
+
+function renderImpactPreview() {
+  if (!elements.previewMix || !elements.previewRisk || !elements.previewOutcome || !elements.previewGuidance) return;
+  const budget = Number(state.budget) || 0;
+  if (!state.countryKey) {
+    elements.previewMix.textContent = '未設定';
+    elements.previewRisk.textContent = '-';
+    elements.previewOutcome.textContent = '-';
+    elements.previewGuidance.textContent = 'ミッション開始後、スライダー操作に合わせて政策の狙いを表示します。';
+    return;
+  }
+
+  const fert = Number(elements.fertilizerSlider.value) || 0;
+  const irri = Number(elements.irrigationSlider.value) || 0;
+  const tech = Number(elements.techSlider.value) || 0;
+  const total = fert + irri + tech;
+  const safeTotal = Math.max(total, 1);
+  const fertPct = clampPercent((fert / safeTotal) * 100);
+  const irriPct = clampPercent((irri / safeTotal) * 100);
+  const techPct = clampPercent((tech / safeTotal) * 100);
+  const spendPct = budget > 0 ? clampPercent((total / budget) * 100) : (total > 0 ? 100 : 0);
+  const riskPressure = state.climateRisk || 0;
+  const adaptationCoverage = Math.min(100, Math.round((irriPct * 0.55) + (techPct * 0.45)));
+  const riskAfterPolicy = Math.max(0, Math.round(riskPressure - adaptationCoverage * 0.28));
+
+  elements.previewMix.textContent = total
+    ? `肥${fertPct}% / 灌${irriPct}% / 技${techPct}%`
+    : '未配分';
+  elements.previewRisk.textContent = `${getRiskLabel(riskAfterPolicy)} ${riskAfterPolicy}`;
+
+  let outcome = total ? 'バランス' : '待機';
+  if (fertPct >= 50 && techPct < 25) outcome = '短期収益';
+  else if (techPct >= 45) outcome = '技術蓄積';
+  else if (irriPct >= 35 && riskAfterPolicy >= 45) outcome = '気候適応';
+  else if (fertPct <= 35 && techPct >= 25 && irriPct >= 25) outcome = '再生バランス';
+  else if (spendPct < 20) outcome = '温存';
+  elements.previewOutcome.textContent = outcome;
+
+  // executeTurn と同じ比率式で気候ショック耐性を判定
+  const adaptationRatio = total > 0 ? (irri + tech) / total : 0;
+  const frontCfg = GAME_CONFIG.frontier;
+  const underPrepared = adaptationRatio < (frontCfg.adaptationIrrigationRatio + frontCfg.adaptationTechRatio);
+
+  if (total > budget) {
+    elements.previewGuidance.textContent = '予算を超過しています。自動配分かプリセットで比率を調整してください。';
+  } else if (state.mode === 'frontier' && underPrepared) {
+    elements.previewGuidance.textContent = 'フロンティアでは灌漑と技術の合計比率が低く、次ターンの気候ショックに弱くなります。';
+  } else if (state.mode === 'frontier' && outcome === '再生バランス') {
+    elements.previewGuidance.textContent = '再生ループ向きの配分です。収益を確保しながら環境とレジリエンスを戻しやすい構成です。';
+  } else {
+    elements.previewGuidance.textContent = `投資予定は現在予算の${spendPct}%です。${outcome}寄りの政策として進行します。`;
+  }
+}
+
+function renderClimatePulseUI() {
+  const pulse = state.climatePulse || {
+    label: '待機',
+    message: 'ターン開始後、気候条件を解析します。',
+    tags: []
+  };
+  if (elements.missionPulse) {
+    elements.missionPulse.style.display = state.countryKey ? 'grid' : 'none';
+  }
+  if (elements.missionPulseGuidance) elements.missionPulseGuidance.textContent = pulse.message;
+  if (elements.pulseRisk) elements.pulseRisk.textContent = `${pulse.label} ${state.climateRisk || 0}`;
+  if (elements.pulseResilience) elements.pulseResilience.textContent = `${state.resilienceScore || 0}`;
+  if (elements.pulseFocus) {
+    elements.pulseFocus.textContent = pulse.tags?.[0] || '観測';
+  }
+  if (elements.climatePulseText) elements.climatePulseText.textContent = pulse.message;
+  if (!elements.climatePulseTags) return;
+  elements.climatePulseTags.innerHTML = '';
+  (pulse.tags || []).forEach(tag => {
+    const chip = document.createElement('span');
+    chip.className = 'pulse-tag';
+    chip.textContent = tag;
+    elements.climatePulseTags.appendChild(chip);
+  });
 }
 
 function autoNormalize() {
@@ -335,7 +450,7 @@ function updateCustomPresetLabel() {
 function updateChallengeProgressUI() {
   const info = CHALLENGES[state.challenge] || CHALLENGES.free;
   if (elements.challengeBadge) {
-    elements.challengeBadge.textContent = `チャレンジ: ${info.name} — ${info.goal}`;
+    elements.challengeBadge.textContent = `チャレンジ: ${info.name} — ${resolveChallengeGoal(state.challenge)}`;
   }
   if (!elements.challengeProgress) return;
   const chip = elements.challengeProgress;
@@ -352,6 +467,12 @@ function updateChallengeProgressUI() {
     text = '未達成';
   } else {
     chip.classList.add('chip-pending');
+    if (state.challenge === 'regen_loop') {
+      const ndviDelta = Number.isFinite(state.initialAvgNdvi)
+        ? (state.avgNdvi - state.initialAvgNdvi).toFixed(3)
+        : '0.000';
+      text = `環${state.envScore} / NDVI ${ndviDelta} / 再${state.resilienceScore}`;
+    }
   }
   chip.textContent = `${info.name}: ${text}`;
 }
@@ -452,6 +573,10 @@ function downloadHistory() {
       turnLimit: state.turnLimit || TURN_COUNT,
       totalFoodValue: state.totalFoodValue,
       skillUsed: state.skillUsed,
+      initialAvgNdvi: state.initialAvgNdvi,
+      finalAvgNdvi: state.avgNdvi,
+      resilienceScore: state.resilienceScore,
+      climateRisk: state.climateRisk,
       competition: state.mode === 'competition' ? {
         eventId: state.competitionEventId,
         eventName: state.competitionEventName,
@@ -461,7 +586,7 @@ function downloadHistory() {
       challenge: {
         key: state.challenge,
         name: challengeInfo.name,
-        goal: challengeInfo.goal,
+        goal: resolveChallengeGoal(state.challenge),
         status: state.challengeStatus
       }
     },
@@ -491,7 +616,7 @@ function renderHistory() {
   if (!state.history.length) {
     const row = document.createElement('tr');
     const cell = document.createElement('td');
-    cell.colSpan = 5;
+    cell.colSpan = 6;
     cell.className = 'history-empty';
     cell.textContent = 'まだ履歴がありません。';
     row.appendChild(cell);
@@ -507,7 +632,8 @@ function renderHistory() {
       alloc,
       entry.avgNdvi.toFixed(3),
       formatUSD(entry.revenue),
-      entry.envScore
+      entry.envScore,
+      `${entry.climateRisk ?? '-'} / ${entry.resilienceScore ?? '-'}`
     ].forEach(value => {
       const cell = document.createElement('td');
       cell.textContent = value;

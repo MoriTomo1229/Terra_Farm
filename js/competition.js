@@ -144,6 +144,7 @@ function setSelectedCountry(countryKey) {
 
 function applyCompetitionModeToInputs() {
   const competitionMode = getSelectedMode() === 'competition';
+  const frontierMode = getSelectedMode() === 'frontier';
   const event = competitionState.currentEvent;
   const hasLockedEvent = competitionMode && !!event;
 
@@ -154,13 +155,15 @@ function applyCompetitionModeToInputs() {
   }
   if (elements.yearSelect) elements.yearSelect.disabled = hasLockedEvent;
   if (elements.budgetInput) elements.budgetInput.disabled = hasLockedEvent;
-  if (elements.challengeSelect) elements.challengeSelect.disabled = hasLockedEvent;
+  if (elements.challengeSelect) elements.challengeSelect.disabled = hasLockedEvent || frontierMode;
 
   if (hasLockedEvent) {
     setSelectedCountry(event.countryKey);
     elements.yearSelect.value = event.missionYear;
     elements.budgetInput.value = formatBudgetInputValue(event.startingBudget);
     elements.challengeSelect.value = event.challengeKey;
+  } else if (frontierMode && elements.challengeSelect) {
+    elements.challengeSelect.value = 'regen_loop';
   }
 
   if (!elements.modeHelper) return;
@@ -168,6 +171,9 @@ function applyCompetitionModeToInputs() {
     elements.modeHelper.textContent = `競争モードでは「${event.name}」の条件で固定されます。プレイヤー名を入力して開始してください。`;
   } else if (competitionMode) {
     elements.modeHelper.textContent = '競争モードを準備中です。大会情報の取得を待ってから開始してください。';
+  } else if (frontierMode) {
+    const modeInfo = PLAY_MODES.frontier;
+    elements.modeHelper.textContent = `${modeInfo.name}: ${modeInfo.description} チャレンジは「再生ループ」に固定されます。`;
   } else {
     elements.modeHelper.textContent = '通常プレイでは国・予算・チャレンジを自由に設定できます。';
   }
@@ -300,7 +306,8 @@ function renderSessionSummary() {
   if (!elements.sessionSummary) return;
   const parts = [];
   if (state.playerName) parts.push(`プレイヤー: ${state.playerName}`);
-  parts.push(state.mode === 'competition' ? 'モード: 競争' : 'モード: 通常');
+  const modeInfo = PLAY_MODES[state.mode] || PLAY_MODES.solo;
+  parts.push(`モード: ${modeInfo.name}`);
   if (state.mode === 'competition' && state.competitionEventName) {
     parts.push(`大会: ${state.competitionEventName}`);
   }

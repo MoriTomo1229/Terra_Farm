@@ -31,6 +31,7 @@
         <label for="mode-select">プレイモード:</label>
         <select id="mode-select" aria-label="プレイモード選択">
           <option value="solo">通常プレイ</option>
+          <option value="frontier">フロンティア・ラボ</option>
           <option value="competition">競争モード</option>
         </select>
       </div>
@@ -40,10 +41,29 @@
         <select id="theme-select" aria-label="表示テーマ選択">
           <option value="dark">ダーク</option>
           <option value="light">ライト</option>
+          <option value="signal">シグナル</option>
         </select>
       </div>
     </div>
     <p id="mode-helper" class="mode-helper">通常プレイでは国・予算・チャレンジを自由に設定できます。</p>
+
+    <div class="mode-feature-grid" aria-label="新機能の概要">
+      <article class="mode-feature-card">
+        <span class="mode-feature-kicker">New Mode</span>
+        <h3>フロンティア・ラボ</h3>
+        <p>高温・乾燥化が進む条件で、短期収益だけでなく再生力を伸ばすモードです。</p>
+      </article>
+      <article class="mode-feature-card">
+        <span class="mode-feature-kicker">Decision Aid</span>
+        <h3>影響プレビュー</h3>
+        <p>スライダー調整に応じて、配分ミックス、気候リスク、政策の狙いを即時表示します。</p>
+      </article>
+      <article class="mode-feature-card">
+        <span class="mode-feature-kicker">Design</span>
+        <h3>シグナルテーマ</h3>
+        <p>ミッション管制のような高コントラスト表示で、重要指標を素早く確認できます。</p>
+      </article>
+    </div>
 
     <div class="field-block">
       <div class="field-heading">
@@ -83,6 +103,7 @@
           <option value="free">フリー（目標なし）</option>
           <option value="env_guard">環境キーパー（最終環境スコア80以上）</option>
           <option value="growth_drive">成長ドライブ（総収入を初期予算の1.8倍以上）</option>
+          <option value="regen_loop">再生ループ（環境・NDVI・レジリエンス回復）</option>
         </select>
       </div>
     </div>
@@ -132,9 +153,30 @@
       <select id="theme-select-header" aria-label="ゲーム画面の表示テーマ選択">
         <option value="dark">ダーク</option>
         <option value="light">ライト</option>
+        <option value="signal">シグナル</option>
       </select>
     </div>
   </header>
+
+  <section id="mission-pulse" class="mission-pulse panel" aria-live="polite">
+    <div class="mission-pulse-copy">
+      <p class="panel-label">Mission Pulse</p>
+      <h2>気候パルス</h2>
+      <p id="mission-pulse-guidance">ミッション開始後に気候リスクと再生力を表示します。</p>
+    </div>
+    <div class="pulse-metric">
+      <span>リスク</span>
+      <strong id="pulse-risk">-</strong>
+    </div>
+    <div class="pulse-metric">
+      <span>レジリエンス</span>
+      <strong id="pulse-resilience">-</strong>
+    </div>
+    <div class="pulse-metric">
+      <span>次の焦点</span>
+      <strong id="pulse-focus">-</strong>
+    </div>
+  </section>
 
   <main id="game-container" class="game-layout" role="main">
     <div id="status-display" class="panel panel-section status-panel">
@@ -146,6 +188,8 @@
       <p>予算: <strong id="budget-value">$0</strong></p>
       <p>総収入: <strong id="total-food-value">$0</strong></p>
       <p>環境スコア: <strong id="env-score-value">70</strong></p>
+      <p>レジリエンス: <strong id="resilience-value">50</strong></p>
+      <p>気候リスク: <strong id="climate-risk-value">0</strong></p>
       <p>時代: <strong id="era-value">-</strong></p>
       <p>技術ポイント: <strong id="tech-points-value">0</strong></p>
       <p class="challenge-progress-row">チャレンジ進行度: <span id="challenge-progress" class="chip chip-pending">-</span></p>
@@ -239,6 +283,25 @@
       <p>残り予算: <strong id="remaining-budget">$0</strong></p>
       <div id="allocation-warning" class="warning" role="alert"></div>
 
+      <div id="impact-preview" class="impact-preview small-panel panel" aria-live="polite">
+        <h4>影響プレビュー</h4>
+        <div class="impact-grid">
+          <div>
+            <span>配分</span>
+            <strong id="preview-mix">未設定</strong>
+          </div>
+          <div>
+            <span>気候対応</span>
+            <strong id="preview-risk">-</strong>
+          </div>
+          <div>
+            <span>政策シグナル</span>
+            <strong id="preview-outcome">-</strong>
+          </div>
+        </div>
+        <p id="preview-guidance" class="preview-guidance">スライダーを動かすと、このターンの狙いが表示されます。</p>
+      </div>
+
       <div class="buttons">
         <button id="execute-turn-button" class="button-primary">ターンを実行</button>
         <button id="auto-allocate-button" class="button-secondary">自動配分</button>
@@ -259,6 +322,11 @@
       <p class="result" id="turn-result-text">未実行</p>
       <p class="event" id="event-text">-</p>
       <p class="un-report" id="un-report">-</p>
+      <div id="climate-pulse-panel" class="small-panel panel climate-pulse-panel">
+        <h4>気候パルス解析</h4>
+        <p id="climate-pulse-text">ミッション開始後に表示されます。</p>
+        <div id="climate-pulse-tags" class="pulse-tags" aria-label="気候パルスタグ"></div>
+      </div>
       <div id="log" class="log-area" aria-live="polite"></div>
       <div id="history-panel" class="small-panel panel">
         <h4>ターン履歴</h4>
@@ -271,10 +339,11 @@
                 <th scope="col">NDVI</th>
                 <th scope="col">収入</th>
                 <th scope="col">環境</th>
+                <th scope="col">リスク/再生</th>
               </tr>
             </thead>
             <tbody id="history-body">
-              <tr><td colspan="5" class="history-empty">まだ履歴がありません。</td></tr>
+              <tr><td colspan="6" class="history-empty">まだ履歴がありません。</td></tr>
             </tbody>
           </table>
         </div>

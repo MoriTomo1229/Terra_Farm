@@ -51,17 +51,24 @@ function onStart() {
 
   const countryKey = getSelectedCountryKey();
   const year = elements.yearSelect.value;
-  const challengeKey = getSelectedChallengeKey();
+  const challengeKey = mode === 'frontier' ? 'regen_loop' : getSelectedChallengeKey();
   const parsedBudget = parseBudgetInput(elements.budgetInput.value);
   if (!parsedBudget || isNaN(parsedBudget) || parsedBudget <= 0) {
     elements.startError.textContent = '無効な予算です。例: 200B or 500M';
     return;
   }
   elements.startError.textContent = '';
+  const frontierOptions = mode === 'frontier'
+    ? {
+        turnLimit: GAME_CONFIG.frontier.turnLimit,
+        initialEnvScore: GAME_CONFIG.frontier.initialEnvScore
+      }
+    : {};
   startGame(countryKey, parsedBudget, year, challengeKey, {
     mode,
     playerId: playerProfile.id,
-    playerName
+    playerName,
+    ...frontierOptions
   });
 }
 
@@ -70,7 +77,9 @@ async function startGame(countryKey, startingBudget, year, challengeKey, options
     mode = 'solo',
     playerId = ensurePlayerProfile().id,
     playerName = '',
-    competitionEvent = null
+    competitionEvent = null,
+    turnLimit = null,
+    initialEnvScore = 70
   } = options;
   elements.startButton.disabled = true;
   elements.startButton.textContent = '衛星データを読み込み中...';
@@ -78,6 +87,9 @@ async function startGame(countryKey, startingBudget, year, challengeKey, options
     const scaledMapData = await loadOrGenerateMap(countryKey, year, {
       allowFallback: mode !== 'competition'
     });
+    const initialAvgNdvi = typeof calculateMapAverage === 'function'
+      ? calculateMapAverage(scaledMapData)
+      : 0;
 
     // Reset state
     state = {
@@ -87,19 +99,26 @@ async function startGame(countryKey, startingBudget, year, challengeKey, options
       playerName,
       countryKey, year,
       turn: 0,
-      turnLimit: competitionEvent?.turnCount || TURN_COUNT,
+      turnLimit: competitionEvent?.turnCount || turnLimit || TURN_COUNT,
       isTurnProcessing: false,
       budget: startingBudget,
       initialBudget: startingBudget,
       finalScore: 0,
       totalFoodValue: 0,
-      envScore: 70,
+      envScore: initialEnvScore,
       techPoints: 0,
       eraIndex: 0,
       challenge: challengeKey,
       challengeStatus: challengeKey === 'free' ? 'success' : 'pending',
       customPreset: null,
       chartData: [],
+      initialAvgNdvi,
+      resilienceScore: 50,
+      climateRisk: 0,
+      climatePulse: null,
+      soilMoisture: 0,
+      precipitation: 0,
+      temperature: 0,
       baseMapPotential: scaledMapData,
       currentMapNdvi: JSON.parse(JSON.stringify(scaledMapData)),
       avgNdvi: 0,
@@ -120,17 +139,20 @@ async function startGame(countryKey, startingBudget, year, challengeKey, options
 
     elements.startScreen.style.display = 'none';
     elements.header.style.display = 'flex';
+    if (elements.missionPulse) elements.missionPulse.style.display = 'grid';
     elements.gameContainer.style.display = 'grid';
+    document.body.setAttribute('data-play-mode', mode);
     const displayYear = parseInt(year,10) + 2000;
     elements.selectedCountry.innerHTML = `<span class="flag">${c.flag}</span> <strong>${c.name} (${displayYear}) — Skill: ${c.skill}</strong>`;
     elements.maxTurns.textContent = state.turnLimit;
     const challengeInfo = CHALLENGES[challengeKey] || CHALLENGES.free;
-    elements.challengeBadge.textContent = `チャレンジ: ${challengeInfo.name} — ${challengeInfo.goal}`;
+    elements.challengeBadge.textContent = `チャレンジ: ${challengeInfo.name} — ${resolveChallengeGoal(challengeKey)}`;
     renderSessionSummary();
     renderCompetitionFinalStatus('', '');
     updateChallengeProgressUI();
 
-    log(`ミッション開始: ${c.name} (${displayYear}年). 初期予算 ${formatUSD(state.budget)}. チャレンジ: ${challengeInfo.name}. モード: ${mode === 'competition' ? '競争' : '通常'}. ${state.playerName ? `プレイヤー: ${state.playerName}.` : ''}`);
+    const modeInfo = PLAY_MODES[mode] || PLAY_MODES.solo;
+    log(`ミッション開始: ${c.name} (${displayYear}年). 初期予算 ${formatUSD(state.budget)}. チャレンジ: ${challengeInfo.name}. モード: ${modeInfo.logName}. ${state.playerName ? `プレイヤー: ${state.playerName}.` : ''}`);
     nextTurn();
 
   } catch (error) {
@@ -151,6 +173,7 @@ function nextTurn() {
   showWorldNews();
   generateTurnConditions();
   calculateCurrentAverages();
+  if (typeof updateClimatePulse === 'function') updateClimatePulse();
   renderUI();
   resetControls();
   log(`--- ターン ${state.turn} ---`);
@@ -159,6 +182,7 @@ function nextTurn() {
 }
 
 function endGame() {
+  if (typeof updateClimatePulse === 'function') updateClimatePulse();
   elements.finalFood.textContent = formatUSD(state.totalFoodValue);
   elements.finalEnv.textContent = state.envScore;
   elements.finalTech.textContent = ERAS[state.eraIndex];
@@ -166,7 +190,7 @@ function endGame() {
   const challengeInfo = CHALLENGES[state.challenge] || CHALLENGES.free;
   if (state.challenge !== 'free') {
     const statusText = state.challengeStatus === 'success' ? '達成！' : '未達成';
-    elements.finalChallenge.textContent = `チャレンジ「${challengeInfo.name}」: ${statusText} (${challengeInfo.goal})`;
+    elements.finalChallenge.textContent = `チャレンジ「${challengeInfo.name}」: ${statusText} (${resolveChallengeGoal(state.challenge)})`;
   } else {
     elements.finalChallenge.textContent = '';
   }
@@ -190,6 +214,10 @@ function attachListeners() {
   elements.executeButton.addEventListener('click', executeTurn);
   elements.autoAllocateButton.addEventListener('click', autoNormalize);
   elements.specialSkillButton.addEventListener('click', activateSkill);
+  if (elements.cropSelect) elements.cropSelect.addEventListener('change', () => {
+    if (state.countryKey) renderUI();
+    else renderImpactPreview();
+  });
   if (elements.presetEnv) elements.presetEnv.addEventListener('click', () => applyPreset({fert:0.45, irri:0.35, tech:0.2}, '環境重視'));
   if (elements.presetRevenue) elements.presetRevenue.addEventListener('click', () => applyPreset({fert:0.55, irri:0.25, tech:0.2}, '収益重視'));
   if (elements.presetTech) elements.presetTech.addEventListener('click', () => applyPreset({fert:0.2, irri:0.25, tech:0.55}, '技術重視'));
