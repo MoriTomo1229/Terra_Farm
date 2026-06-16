@@ -79,9 +79,11 @@ Open `http://127.0.0.1:8080/` in your browser. You can change the port with `POR
 
 ## Credits & Attribution
 
+- **Unofficial Project Notice**: Terra Farm is an independent, unofficial project created for the NASA Space Apps Challenge. It is not endorsed, sponsored, or approved by NASA, and use of NASA-related references does not imply NASA affiliation or support.
 - **NASA Space Apps Challenge**: This project was created as part of the [NASA Space Apps Challenge](https://www.spaceappschallenge.org/). The NASA logo and branding are used under the challenge guidelines for project presentation purposes.
 - **Satellite Imagery**: Background image and map visualizations are inspired by NASA Earth observations. NDVI (Normalized Difference Vegetation Index) data concepts are derived from NASA MODIS (MOD13A3).
 - **Icons & Assets**: Country flag emojis are standard Unicode emoji provided by the operating system.
+- See [ATTRIBUTIONS.md](ATTRIBUTIONS.md) for source and asset attribution details.
 
 ## Security Disclaimer
 
@@ -92,4 +94,6 @@ Open `http://127.0.0.1:8080/` in your browser. You can change the port with `POR
 
 ## License
 
-MIT
+The source code in this repository is released under the MIT License.
+
+NASA names, logos, insignia, imagery, and other third-party assets are not covered by the MIT License and remain subject to their respective owners' terms and guidelines.
