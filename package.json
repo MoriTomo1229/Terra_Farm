@@ -7,7 +7,8 @@
     "dev": "CI=1 wrangler d1 migrations apply terra-farm --local && wrangler pages dev . --ip 0.0.0.0 --port ${PORT:-8080}",
     "dev:static": "http-server -a 0.0.0.0 -p ${PORT:-8080}",
     "db:migrate:local": "CI=1 wrangler d1 migrations apply terra-farm --local",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "node -e \"const f=['index.html','js/main.js','js/config.js','js/state.js','js/ui.js','js/competition.js','js/game-logic.js','js/map.js','js/i18n.js','css/style.css'];f.forEach(p=>{try{require('fs').accessSync(p)}catch{console.error('missing:'+p);process.exitCode=1}});console.log('All files OK');\"",
+    "test": "node -e \"const f=['index.html','js/config.js','js/state.js','js/ui.js','js/competition.js','js/map.js','js/game-logic.js','js/main.js','js/i18n.js'];f.forEach(p=>require('fs').accessSync(p));console.log('smoke OK');\""
   },
   "repository": {
     "type": "git",
@@ -15,7 +16,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/MoriTomo1229/Terra_Farm/issues"
@@ -23,6 +24,6 @@
   "homepage": "https://github.com/MoriTomo1229/Terra_Farm#readme",
   "devDependencies": {
     "http-server": "^14.1.1",
-    "wrangler": "4.82.0"
+    "wrangler": "^4.100.0"
   }
 }
