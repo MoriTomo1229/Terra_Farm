@@ -9,7 +9,7 @@ const DICT = {
     // ==== HTML: start screen ====
     'start.eyebrow': '農業政策シミュレーション',
     'start.subtitle': '複雑な農業政策を整理し、限られた予算で生産性と持続可能性の両立を目指すシミュレーションです。',
-    'start.lead': '国、予算、年代、チャレンジ条件を決めてミッションを開始します。競争モードでは大会条件が固定されます。',
+    'start.lead': '国、予算、年代、チャレンジ条件を決めてミッションを開始します。競争モードではブラウザ内のローカルランキングに挑戦できます。',
     'start.playerLabel': 'プレイヤー名:',
     'start.playerPlaceholder': '例: TerraPlayer',
     'start.playerAria': 'プレイヤー名入力',
@@ -330,6 +330,7 @@ const DICT = {
     'comp.summaryTurnsLabel': 'ターン数',
     'comp.summaryRuleset': 'ルール版',
     'comp.leaderboardLoadError': 'ランキングを取得できませんでした。',
+    'comp.leaderboardEmpty': 'まだスコアが登録されていません。',
     'comp.leaderboardPlayerBest': '自分の記録: {rank}位 / {score} 点',
     'comp.leaderboardPlayerBestNone': '自分の記録: 未登録',
     'comp.leaderboardRank': '{rank}位',
@@ -361,7 +362,7 @@ const DICT = {
     // ==== HTML: start screen ====
     'start.eyebrow': 'Agricultural Policy Simulation',
     'start.subtitle': 'A simulation that organizes complex agricultural policies and aims to balance productivity and sustainability with limited budgets.',
-    'start.lead': 'Set your country, budget, era, and challenge conditions to begin your mission. Competition mode locks in tournament conditions.',
+    'start.lead': 'Set your country, budget, era, and challenge conditions to begin your mission. Competition mode uses a browser-local leaderboard.',
     'start.playerLabel': 'Player Name:',
     'start.playerPlaceholder': 'e.g. TerraPlayer',
     'start.playerAria': 'Player name input',
@@ -666,7 +667,7 @@ const DICT = {
     'session.tournament': 'Tournament: {name}',
 
     // ==== JS: competition.js ====
-    'comp.modeHelperCompetition': 'Competition mode locks conditions to "{name}". Enter your player name and start.',
+    'comp.modeHelperCompetition': 'Competition mode uses the fixed conditions for "{name}" and stores rankings in this browser.',
     'comp.modeHelperCompetitionPreparing': 'Competition mode is initializing. Please wait for tournament data before starting.',
     'comp.modeHelperFrontier': 'Frontier Lab: Experimental mode balancing resilience and regenerative agriculture under high-risk climate. Challenge is locked to "Regeneration Loop".',
     'comp.modeHelperSolo': 'In Standard Play, you can freely configure country, budget, and challenge.',
@@ -682,6 +683,7 @@ const DICT = {
     'comp.summaryTurnsLabel': 'Turns',
     'comp.summaryRuleset': 'Ruleset Version',
     'comp.leaderboardLoadError': 'Could not load leaderboard.',
+    'comp.leaderboardEmpty': 'No scores registered yet.',
     'comp.leaderboardPlayerBest': 'My Record: #{rank} / {score} pts',
     'comp.leaderboardPlayerBestNone': 'My Record: Not registered',
     'comp.leaderboardRank': '#{rank}',

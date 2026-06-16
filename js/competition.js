@@ -2,7 +2,23 @@
 
 const COMPETITION_SIMULATION_VERSION = '2026-04-competition-v1';
 const PLAYER_PROFILE_STORAGE_KEY = 'terra_farm_player_profile_v1';
+const COMPETITION_LEADERBOARD_STORAGE_KEY = 'terra_farm_local_leaderboard_v1';
 const MAX_PLAYER_NAME_LENGTH = 20;
+const LOCAL_COMPETITION_EVENT = {
+  id: 'local-spring-opening-2026',
+  name: 'Local Spring Opening Cup',
+  description: '固定シードのローカル大会です。ランキングはこのブラウザ内に保存されます。',
+  countryKey: 'usa',
+  missionYear: '05',
+  challengeKey: 'env_guard',
+  startingBudget: 200000000000,
+  turnCount: 10,
+  seed: 'spring-opening-seed-2026',
+  rulesetVersion: COMPETITION_SIMULATION_VERSION,
+  startsAt: '2026-04-13T00:00:00Z',
+  endsAt: null,
+  isActive: true
+};
 
 let competitionState = {
   currentEvent: null,
@@ -314,44 +330,52 @@ function renderSessionSummary() {
   elements.sessionSummary.textContent = parts.join(' / ');
 }
 
-async function fetchCompetitionJson(url, options = {}) {
-  const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {})
-    },
-    ...options
-  });
-
-  let payload = null;
+function loadLocalLeaderboard() {
   try {
-    payload = await response.json();
+    const raw = localStorage.getItem(COMPETITION_LEADERBOARD_STORAGE_KEY);
+    if (!raw) return [];
+    const entries = JSON.parse(raw);
+    return Array.isArray(entries) ? entries : [];
   } catch {
-    payload = null;
+    return [];
   }
-
-  if (!response.ok) {
-    throw new Error(payload?.error || `HTTP ${response.status}`);
-  }
-  return payload;
 }
 
-function buildLeaderboardUrl(eventId) {
-  const params = new URLSearchParams();
-  if (eventId) params.set('eventId', eventId);
-  const playerId = ensurePlayerProfile().id;
-  if (playerId) params.set('playerId', playerId);
-  return `/api/leaderboard?${params.toString()}`;
+function saveLocalLeaderboard(entries) {
+  try {
+    localStorage.setItem(COMPETITION_LEADERBOARD_STORAGE_KEY, JSON.stringify(entries));
+  } catch {
+    // localStorage が使えない環境ではランキング保存を諦める
+  }
 }
 
-async function loadCompetitionLobby() {
+function rankLeaderboard(entries) {
+  return entries
+    .slice()
+    .sort((a, b) => {
+      if (b.finalScore !== a.finalScore) return b.finalScore - a.finalScore;
+      return String(a.updatedAt || a.createdAt || '').localeCompare(String(b.updatedAt || b.createdAt || ''));
+    })
+    .map((entry, index) => ({ ...entry, rank: index + 1 }));
+}
+
+function getCompetitionSnapshot(playerId = ensurePlayerProfile().id) {
+  const ranked = rankLeaderboard(loadLocalLeaderboard());
+  return {
+    event: LOCAL_COMPETITION_EVENT,
+    leaderboard: ranked.slice(0, 10),
+    playerEntry: ranked.find(entry => entry.anonymousPlayerId === playerId) || null
+  };
+}
+
+function loadCompetitionLobby() {
   ensurePlayerProfile();
   competitionState.isLoading = true;
   competitionState.loadError = '';
   renderCompetitionCard();
   try {
     const playerId = ensurePlayerProfile().id;
-    const data = await fetchCompetitionJson(`/api/competition/current?playerId=${encodeURIComponent(playerId)}`);
+    const data = getCompetitionSnapshot(playerId);
     competitionState.currentEvent = data.event || null;
     competitionState.leaderboard = data.leaderboard || [];
     competitionState.playerEntry = data.playerEntry || null;
@@ -368,16 +392,11 @@ async function loadCompetitionLobby() {
   }
 }
 
-async function refreshCompetitionLeaderboard() {
-  const eventId = competitionState.currentEvent?.id;
-  if (!eventId) {
-    await loadCompetitionLobby();
-    return;
-  }
+function refreshCompetitionLeaderboard() {
   competitionState.isLoading = true;
   renderCompetitionCard();
   try {
-    const data = await fetchCompetitionJson(buildLeaderboardUrl(eventId));
+    const data = getCompetitionSnapshot();
     competitionState.leaderboard = data.leaderboard || [];
     competitionState.playerEntry = data.playerEntry || null;
     competitionState.loadError = '';
@@ -417,23 +436,50 @@ function buildCompetitionSubmissionPayload() {
   };
 }
 
-async function submitCompetitionResult() {
+function submitCompetitionResult() {
   if (state.mode !== 'competition' || !state.competitionEventId || competitionState.isSubmitting) return;
   competitionState.isSubmitting = true;
   renderCompetitionFinalStatus(t('comp.submitting'), 'pending');
   try {
     const payload = buildCompetitionSubmissionPayload();
-    const data = await fetchCompetitionJson('/api/leaderboard', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
+    const entries = loadLocalLeaderboard();
+    const now = new Date().toISOString();
+    const existingIndex = entries.findIndex(entry =>
+      entry.eventId === payload.eventId &&
+      entry.anonymousPlayerId === payload.anonymousPlayerId
+    );
+    const existing = existingIndex >= 0 ? entries[existingIndex] : null;
+    const improved = !existing || payload.result.finalScore > existing.finalScore;
+    const nextEntry = {
+      ...(existing || {}),
+      eventId: payload.eventId,
+      anonymousPlayerId: payload.anonymousPlayerId,
+      displayName: payload.displayName,
+      finalScore: improved ? payload.result.finalScore : existing.finalScore,
+      remainingBudget: improved ? payload.result.remainingBudget : existing.remainingBudget,
+      totalFoodValue: improved ? payload.result.totalFoodValue : existing.totalFoodValue,
+      envScore: improved ? payload.result.envScore : existing.envScore,
+      eraIndex: improved ? payload.result.eraIndex : existing.eraIndex,
+      challengeStatus: improved ? payload.result.challengeStatus : existing.challengeStatus,
+      turnsPlayed: improved ? payload.result.turnsPlayed : existing.turnsPlayed,
+      simulationVersion: payload.mission.simulationVersion,
+      missionYear: payload.mission.missionYear,
+      createdAt: existing?.createdAt || now,
+      updatedAt: now
+    };
+    if (existingIndex >= 0) entries[existingIndex] = nextEntry;
+    else entries.push(nextEntry);
+    saveLocalLeaderboard(entries);
+
+    const data = getCompetitionSnapshot(payload.anonymousPlayerId);
     competitionState.leaderboard = data.leaderboard || competitionState.leaderboard;
-    competitionState.playerEntry = data.playerEntry || data.entry || competitionState.playerEntry;
+    competitionState.playerEntry = data.playerEntry || competitionState.playerEntry;
     renderCompetitionCard();
-    if (data.improved) {
-      renderCompetitionFinalStatus(t('comp.submitSuccessImproved', {rank: data.rank}), 'success');
+    const rank = competitionState.playerEntry?.rank || 1;
+    if (improved) {
+      renderCompetitionFinalStatus(t('comp.submitSuccessImproved', {rank}), 'success');
     } else {
-      renderCompetitionFinalStatus(t('comp.submitSuccessNoImprove', {rank: data.rank}), 'success');
+      renderCompetitionFinalStatus(t('comp.submitSuccessNoImprove', {rank}), 'success');
     }
   } catch (error) {
     renderCompetitionFinalStatus(t('comp.submitError', {error: error.message}), 'error');
@@ -452,5 +498,5 @@ function bootstrapCompetition() {
   renderCompetitionCard();
   applyCompetitionModeToInputs();
   renderCompetitionFinalStatus('', '');
-  void loadCompetitionLobby();
+  loadCompetitionLobby();
 }
