@@ -22,10 +22,20 @@ const SCORE_CONFIG = {
   eraMultiplier: 1000
 };
 
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
+};
+
 export function json(data, init = {}) {
   const headers = new Headers(init.headers || {});
   if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json; charset=utf-8');
   if (!headers.has('Cache-Control')) headers.set('Cache-Control', 'no-store');
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    if (!headers.has(key)) headers.set(key, value);
+  }
   return new Response(JSON.stringify(data), {
     ...init,
     headers
@@ -34,6 +44,43 @@ export function json(data, init = {}) {
 
 export function badRequest(message, status = 400) {
   return json({ error: message }, { status });
+}
+
+/**
+ * 簡易レート制限（同一 IP からのリクエストを制限）
+ * Cloudflare Workers の Isolate 単位で動作するベストエフォート制限。
+ * 本番環境では Cloudflare ダッシュボードの WAF レート制限ルールと併用推奨。
+ */
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 60_000;   // 1分間のウィンドウ
+const RATE_LIMIT_MAX = 30;              // ウィンドウあたり最大リクエスト数
+
+export function checkRateLimit(request) {
+  const ip = request.headers.get('CF-Connecting-IP')
+    || request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim()
+    || 'unknown';
+  const now = Date.now();
+
+  // 期限切れエントリを間引く（100件に1回）
+  if (rateLimitStore.size > 100 && Math.random() < 0.01) {
+    const cutoff = now - RATE_LIMIT_WINDOW_MS;
+    for (const [key, entry] of rateLimitStore) {
+      if (entry.resetAt < cutoff) rateLimitStore.delete(key);
+    }
+  }
+
+  const entry = rateLimitStore.get(ip);
+  if (!entry || entry.resetAt < now) {
+    rateLimitStore.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return null; // OK
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return badRequest('リクエストが多すぎます。しばらく待ってから再試行してください。', 429);
+  }
+
+  entry.count++;
+  return null; // OK
 }
 
 export function sanitizeDisplayName(value) {

@@ -201,7 +201,12 @@ function endGame() {
   elements.gameOverModal.classList.add('modal-visible');
   log(t('main.missionComplete'));
   if (state.mode === 'competition') {
-    void submitCompetitionResult();
+    // スコア送信前に確認。キャンセルした場合は「スコアを再送信」ボタンから後で送信可
+    if (confirm(t('comp.confirmSubmit', {score: state.finalScore}))) {
+      void submitCompetitionResult();
+    } else {
+      renderCompetitionFinalStatus(t('comp.submitSkipped'), '');
+    }
   } else {
     renderCompetitionFinalStatus('', '');
   }

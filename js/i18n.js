@@ -339,6 +339,8 @@ const DICT = {
     'comp.submitSuccessImproved': 'ランキング登録完了。現在 {rank} 位で自己ベスト更新です。',
     'comp.submitSuccessNoImprove': '送信完了。今回のスコアでは自己ベストを更新せず、現在順位は {rank} 位です。',
     'comp.submitError': 'ランキング送信に失敗しました: {error}',
+    'comp.confirmSubmit': 'スコア {score} 点をランキングに送信しますか？\nキャンセルした場合も「スコアを再送信」から後で送信できます。',
+    'comp.submitSkipped': 'スコア送信をスキップしました。「スコアを再送信」から後で送信できます。',
 
     // ==== JS: Presets ====
     'preset.applied': 'プリセット適用: {label}',
@@ -689,6 +691,8 @@ const DICT = {
     'comp.submitSuccessImproved': 'Leaderboard submission complete. Currently #{rank}, new personal best!',
     'comp.submitSuccessNoImprove': 'Submission complete. This score did not improve your personal best. Current rank: #{rank}.',
     'comp.submitError': 'Leaderboard submission failed: {error}',
+    'comp.confirmSubmit': 'Submit score {score} to the leaderboard?\nIf you cancel, you can submit later via "Resubmit Score".',
+    'comp.submitSkipped': 'Score submission skipped. You can submit later via "Resubmit Score".',
 
     // ==== JS: Presets ====
     'preset.applied': 'Preset applied: {label}',

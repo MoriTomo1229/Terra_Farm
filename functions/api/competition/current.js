@@ -1,5 +1,6 @@
 import {
   badRequest,
+  checkRateLimit,
   ensureActiveEvent,
   getPlayerEntry,
   json,
@@ -8,6 +9,9 @@ import {
 } from '../../_lib/competition.js';
 
 export async function onRequestGet(context) {
+  const rateLimitResult = checkRateLimit(context.request);
+  if (rateLimitResult) return rateLimitResult;
+
   const db = context.env.DB;
   if (!db) return badRequest('D1 バインディングが見つかりません。', 500);
 

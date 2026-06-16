@@ -1,6 +1,7 @@
 import {
   COMPETITION_SIMULATION_VERSION,
   badRequest,
+  checkRateLimit,
   computeFinalScore,
   ensureActiveEvent,
   getEventById,
@@ -26,6 +27,9 @@ function validateSubmissionShape(body) {
 }
 
 export async function onRequestGet(context) {
+  const rateLimitResult = checkRateLimit(context.request);
+  if (rateLimitResult) return rateLimitResult;
+
   const db = context.env.DB;
   if (!db) return badRequest('D1 バインディングが見つかりません。', 500);
 
@@ -46,6 +50,9 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestPost(context) {
+  const rateLimitResult = checkRateLimit(context.request);
+  if (rateLimitResult) return rateLimitResult;
+
   const db = context.env.DB;
   if (!db) return badRequest('D1 バインディングが見つかりません。', 500);
 
