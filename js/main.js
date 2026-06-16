@@ -32,11 +32,11 @@ function onStart() {
   if (mode === 'competition') {
     const event = competitionState.currentEvent;
     if (!event) {
-      elements.startError.textContent = '競争モードの大会情報をまだ取得できていません。少し待ってから再試行してください。';
+      elements.startError.textContent = t('main.competitionNotReady');
       return;
     }
     if (!playerName) {
-      elements.startError.textContent = '競争モードではプレイヤー名の入力が必要です。';
+      elements.startError.textContent = t('main.competitionNameRequired');
       return;
     }
     elements.startError.textContent = '';
@@ -54,7 +54,7 @@ function onStart() {
   const challengeKey = mode === 'frontier' ? 'regen_loop' : getSelectedChallengeKey();
   const parsedBudget = parseBudgetInput(elements.budgetInput.value);
   if (!parsedBudget || isNaN(parsedBudget) || parsedBudget <= 0) {
-    elements.startError.textContent = '無効な予算です。例: 200B or 500M';
+    elements.startError.textContent = t('main.invalidBudget');
     return;
   }
   elements.startError.textContent = '';
@@ -82,7 +82,7 @@ async function startGame(countryKey, startingBudget, year, challengeKey, options
     initialEnvScore = 70
   } = options;
   elements.startButton.disabled = true;
-  elements.startButton.textContent = '衛星データを読み込み中...';
+  elements.startButton.textContent = t('start.loadingButton');
   try {
     const scaledMapData = await loadOrGenerateMap(countryKey, year, {
       allowFallback: mode !== 'competition'
@@ -146,21 +146,22 @@ async function startGame(countryKey, startingBudget, year, challengeKey, options
     elements.selectedCountry.innerHTML = `<span class="flag">${c.flag}</span> <strong>${c.name} (${displayYear}) — Skill: ${c.skill}</strong>`;
     elements.maxTurns.textContent = state.turnLimit;
     const challengeInfo = CHALLENGES[challengeKey] || CHALLENGES.free;
-    elements.challengeBadge.textContent = `チャレンジ: ${challengeInfo.name} — ${resolveChallengeGoal(challengeKey)}`;
+    elements.challengeBadge.textContent = t('challenge.badge', { name: t('challenge.' + challengeInfo.key + '.name'), goal: resolveChallengeGoal(challengeKey) });
     renderSessionSummary();
     renderCompetitionFinalStatus('', '');
     updateChallengeProgressUI();
 
     const modeInfo = PLAY_MODES[mode] || PLAY_MODES.solo;
-    log(`ミッション開始: ${c.name} (${displayYear}年). 初期予算 ${formatUSD(state.budget)}. チャレンジ: ${challengeInfo.name}. モード: ${modeInfo.logName}. ${state.playerName ? `プレイヤー: ${state.playerName}.` : ''}`);
+    const playerPart = state.playerName ? t('session.player', { name: state.playerName }) + ' ' : '';
+    log(t('main.missionStart', { country: c.name, year: displayYear, budget: formatUSD(state.budget), challenge: t('challenge.' + challengeInfo.key + '.name'), mode: t('mode.' + mode + '.logName'), player: playerPart }));
     nextTurn();
 
   } catch (error) {
     console.error("ゲームの開始に失敗:", error);
-    elements.startError.textContent = `データ読み込みエラー: ${error.message}`;
+    elements.startError.textContent = t('main.loadError', { message: error.message });
   } finally {
     elements.startButton.disabled = false;
-    elements.startButton.textContent = 'ミッション開始';
+    elements.startButton.textContent = t('start.startButton');
   }
 }
 
@@ -176,7 +177,7 @@ function nextTurn() {
   if (typeof updateClimatePulse === 'function') updateClimatePulse();
   renderUI();
   resetControls();
-  log(`--- ターン ${state.turn} ---`);
+  log(t('turn.logSeparator', { turn: state.turn }));
   elements.unReport.textContent = generateUNReport();
   return true;
 }
@@ -185,12 +186,12 @@ function endGame() {
   if (typeof updateClimatePulse === 'function') updateClimatePulse();
   elements.finalFood.textContent = formatUSD(state.totalFoodValue);
   elements.finalEnv.textContent = state.envScore;
-  elements.finalTech.textContent = ERAS[state.eraIndex];
+  elements.finalTech.textContent = t('era.' + state.eraIndex);
   finalizeChallengeOutcome();
   const challengeInfo = CHALLENGES[state.challenge] || CHALLENGES.free;
   if (state.challenge !== 'free') {
-    const statusText = state.challengeStatus === 'success' ? '達成！' : '未達成';
-    elements.finalChallenge.textContent = `チャレンジ「${challengeInfo.name}」: ${statusText} (${resolveChallengeGoal(state.challenge)})`;
+    const statusText = state.challengeStatus === 'success' ? t('challenge.statusAchieved') : t('challenge.statusNotAchieved');
+    elements.finalChallenge.textContent = t('challenge.finalResult', { name: t('challenge.' + state.challenge + '.name'), status: statusText, goal: resolveChallengeGoal(state.challenge) });
   } else {
     elements.finalChallenge.textContent = '';
   }
@@ -198,7 +199,7 @@ function endGame() {
   elements.finalScore.textContent = state.finalScore;
   elements.gameOverModal.classList.remove('modal-hidden');
   elements.gameOverModal.classList.add('modal-visible');
-  log('ミッション完了。');
+  log(t('main.missionComplete'));
   if (state.mode === 'competition') {
     void submitCompetitionResult();
   } else {
@@ -218,9 +219,9 @@ function attachListeners() {
     if (state.countryKey) renderUI();
     else renderImpactPreview();
   });
-  if (elements.presetEnv) elements.presetEnv.addEventListener('click', () => applyPreset({fert:0.45, irri:0.35, tech:0.2}, '環境重視'));
-  if (elements.presetRevenue) elements.presetRevenue.addEventListener('click', () => applyPreset({fert:0.55, irri:0.25, tech:0.2}, '収益重視'));
-  if (elements.presetTech) elements.presetTech.addEventListener('click', () => applyPreset({fert:0.2, irri:0.25, tech:0.55}, '技術重視'));
+  if (elements.presetEnv) elements.presetEnv.addEventListener('click', () => applyPreset({fert:0.45, irri:0.35, tech:0.2}, t('control.presetEnv')));
+  if (elements.presetRevenue) elements.presetRevenue.addEventListener('click', () => applyPreset({fert:0.55, irri:0.25, tech:0.2}, t('control.presetRevenue')));
+  if (elements.presetTech) elements.presetTech.addEventListener('click', () => applyPreset({fert:0.2, irri:0.25, tech:0.55}, t('control.presetTech')));
   if (elements.presetCustomApply) elements.presetCustomApply.addEventListener('click', applyCustomPreset);
   if (elements.presetCustomSave) elements.presetCustomSave.addEventListener('click', saveCustomPreset);
   if (elements.modeSelect) elements.modeSelect.addEventListener('change', handleGameModeChange);
@@ -231,9 +232,18 @@ function attachListeners() {
   if (elements.retrySubmitScore) elements.retrySubmitScore.addEventListener('click', () => { void submitCompetitionResult(); });
   elements.replayButton.addEventListener('click', () => location.reload());
   elements.downloadLog.addEventListener('click', downloadHistory);
+
+  // Language selector
+  if (elements.langSelect) elements.langSelect.addEventListener('change', function (event) { setLocale(event.target.value); });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+/** Sync language selector to the given locale */
+function syncLangControls(locale) {
+  if (elements.langSelect) elements.langSelect.value = locale;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  initLocale();
   applyTheme(getStoredTheme(), { persist: false });
   initStartScreen();
   attachListeners();

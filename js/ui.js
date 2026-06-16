@@ -8,6 +8,7 @@ const elements = {
   modeSelect: $('#mode-select'),
   themeSelect: $('#theme-select'),
   themeSelectHeader: $('#theme-select-header'),
+  langSelect: $('#lang-select'),
   modeHelper: $('#mode-helper'),
   countrySelectRadios: document.getElementsByName('country'),
   budgetInput: $('#budget-input'),
@@ -116,32 +117,25 @@ const elements = {
 
 // ==================== UI描画 & ヘルパー ====================
 
-const NEWS_POOL = [
-  "🌍 世界の平均気温が0.3°C上昇したと報告されました。",
-  "🧪 新しい環境配慮型肥料が国際特許を取得。",
-  "🚀 地球観測衛星の運用が拡張。NDVIの精度が向上。",
-  "💹 穀物先物が上昇。世界的な需要増が背景。",
-  "🌋 火山活動が活発化。日射が一時的に低下の見込み。",
-  "🌧️ 大気循環の変化でモンスーンの到来が早まる可能性。"
-];
+const NEWS_KEYS = ['news.1', 'news.2', 'news.3', 'news.4', 'news.5', 'news.6'];
 function showWorldNews() {
-  const n = NEWS_POOL[Math.floor(Math.random()*NEWS_POOL.length)];
+  const key = NEWS_KEYS[Math.floor(Math.random()*NEWS_KEYS.length)];
   const banner = document.createElement('div');
   banner.className = 'news-banner';
-  banner.textContent = n;
+  banner.textContent = t(key);
   elements.newsRoot.appendChild(banner);
   setTimeout(()=>banner.remove(), 4200);
 }
 
 function generateUNReport() {
-  let base = "📊 国連レポート: おおむね安定していますが、長期的な気候リスクに注意が必要です。";
-  if (state.envScore < 35) base = "🌍 国連レポート: 環境悪化が深刻です。持続可能性の再考を推奨します。";
-  else if (state.techPoints > GAME_CONFIG.technology.unlocks.orbitalNet) base = "🚀 国連レポート: 技術革新が農業の効率化に顕著な効果。";
-  else if (state.avgNdvi > 0.65) base = "🌱 国連レポート: 植生指数は良好。安定的な食料供給が見込めます。";
+  let base = t('un.baseStable');
+  if (state.envScore < 35) base = t('un.envCritical');
+  else if (state.techPoints > GAME_CONFIG.technology.unlocks.orbitalNet) base = t('un.techInnovation');
+  else if (state.avgNdvi > 0.65) base = t('un.ndviGood');
 
   if (state.mode === 'frontier') {
-    if (state.resilienceScore < 45) return base + " フロンティア地域の再生力が不足しています。灌漑と技術投資の下支えが必要です。";
-    if (state.resilienceScore >= 75) return base + " 高リスク気候下でも農地の回復力が定着しつつあります。";
+    if (state.resilienceScore < 45) return base + t('un.frontierResilienceLow');
+    if (state.resilienceScore >= 75) return base + t('un.frontierResilienceHigh');
   }
   return base;
 }
@@ -186,7 +180,7 @@ function renderUI() {
   elements.envScoreValue.textContent = state.envScore;
   if (elements.resilienceValue) elements.resilienceValue.textContent = state.resilienceScore;
   if (elements.climateRiskValue) elements.climateRiskValue.textContent = state.climateRisk;
-  elements.eraValue.textContent = ERAS[state.eraIndex];
+  elements.eraValue.textContent = t('era.' + state.eraIndex);
   elements.techPointsValue.textContent = state.techPoints.toLocaleString();
   elements.cropValue.textContent = CROPS[elements.cropSelect.value]?.name || '-';
   elements.ndviValue.textContent = state.avgNdvi.toFixed(3);
@@ -269,10 +263,10 @@ function updateRemainingBudget() {
   elements.techValue.textContent = formatUSD(tech);
   elements.remainingBudget.textContent = formatUSD(remaining);
   if (remaining < 0) {
-    elements.allocationWarning.textContent = '予算オーバーです！';
+    elements.allocationWarning.textContent = t('main.budgetOver');
     elements.executeButton.disabled = true;
   } else if (state.isTurnProcessing) {
-    elements.allocationWarning.textContent = 'ターン処理中です...';
+    elements.allocationWarning.textContent = t('main.turnProcessing');
     elements.executeButton.disabled = true;
   } else {
     elements.allocationWarning.textContent = '';
@@ -287,20 +281,20 @@ function clampPercent(value) {
 
 function getRiskLabel(score) {
   const levels = (GAME_CONFIG.climatePulse && GAME_CONFIG.climatePulse.riskLevels) || { crisis: 75, warning: 55, caution: 35 };
-  if (score >= levels.crisis) return '危機';
-  if (score >= levels.warning) return '警戒';
-  if (score >= levels.caution) return '注意';
-  return '安定';
+  if (score >= levels.crisis) return t('risk.crisis');
+  if (score >= levels.warning) return t('risk.warning');
+  if (score >= levels.caution) return t('risk.caution');
+  return t('risk.stable');
 }
 
 function renderImpactPreview() {
   if (!elements.previewMix || !elements.previewRisk || !elements.previewOutcome || !elements.previewGuidance) return;
   const budget = Number(state.budget) || 0;
   if (!state.countryKey) {
-    elements.previewMix.textContent = '未設定';
+    elements.previewMix.textContent = t('preview.mixNotSet');
     elements.previewRisk.textContent = '-';
     elements.previewOutcome.textContent = '-';
-    elements.previewGuidance.textContent = 'ミッション開始後、スライダー操作に合わせて政策の狙いを表示します。';
+    elements.previewGuidance.textContent = t('preview.guidanceInit');
     return;
   }
 
@@ -318,16 +312,16 @@ function renderImpactPreview() {
   const riskAfterPolicy = Math.max(0, Math.round(riskPressure - adaptationCoverage * 0.28));
 
   elements.previewMix.textContent = total
-    ? `肥${fertPct}% / 灌${irriPct}% / 技${techPct}%`
-    : '未配分';
+    ? t('preview.mixAllocated', {fert: fertPct, irri: irriPct, tech: techPct})
+    : t('preview.mixUnallocated');
   elements.previewRisk.textContent = `${getRiskLabel(riskAfterPolicy)} ${riskAfterPolicy}`;
 
-  let outcome = total ? 'バランス' : '待機';
-  if (fertPct >= 50 && techPct < 25) outcome = '短期収益';
-  else if (techPct >= 45) outcome = '技術蓄積';
-  else if (irriPct >= 35 && riskAfterPolicy >= 45) outcome = '気候適応';
-  else if (fertPct <= 35 && techPct >= 25 && irriPct >= 25) outcome = '再生バランス';
-  else if (spendPct < 20) outcome = '温存';
+  let outcome = total ? t('preview.outcomeBalanced') : t('preview.outcomeWaiting');
+  if (fertPct >= 50 && techPct < 25) outcome = t('preview.outcomeShortTerm');
+  else if (techPct >= 45) outcome = t('preview.outcomeTech');
+  else if (irriPct >= 35 && riskAfterPolicy >= 45) outcome = t('preview.outcomeAdaptation');
+  else if (fertPct <= 35 && techPct >= 25 && irriPct >= 25) outcome = t('preview.outcomeRegen');
+  else if (spendPct < 20) outcome = t('preview.outcomeReserve');
   elements.previewOutcome.textContent = outcome;
 
   // executeTurn と同じ比率式で気候ショック耐性を判定
@@ -336,20 +330,20 @@ function renderImpactPreview() {
   const underPrepared = adaptationRatio < (frontCfg.adaptationIrrigationRatio + frontCfg.adaptationTechRatio);
 
   if (total > budget) {
-    elements.previewGuidance.textContent = '予算を超過しています。自動配分かプリセットで比率を調整してください。';
+    elements.previewGuidance.textContent = t('preview.guidanceOverBudget');
   } else if (state.mode === 'frontier' && underPrepared) {
-    elements.previewGuidance.textContent = 'フロンティアでは灌漑と技術の合計比率が低く、次ターンの気候ショックに弱くなります。';
-  } else if (state.mode === 'frontier' && outcome === '再生バランス') {
-    elements.previewGuidance.textContent = '再生ループ向きの配分です。収益を確保しながら環境とレジリエンスを戻しやすい構成です。';
+    elements.previewGuidance.textContent = t('preview.guidanceFrontierUnderPrepared');
+  } else if (state.mode === 'frontier' && outcome === t('preview.outcomeRegen')) {
+    elements.previewGuidance.textContent = t('preview.guidanceFrontierRegen');
   } else {
-    elements.previewGuidance.textContent = `投資予定は現在予算の${spendPct}%です。${outcome}寄りの政策として進行します。`;
+    elements.previewGuidance.textContent = t('preview.guidanceGeneral', {spendPct: spendPct, outcome: outcome});
   }
 }
 
 function renderClimatePulseUI() {
   const pulse = state.climatePulse || {
-    label: '待機',
-    message: 'ターン開始後、気候条件を解析します。',
+    label: t('preview.outcomeWaiting'),
+    message: t('pulse.analyzeWaiting'),
     tags: []
   };
   if (elements.missionPulse) {
@@ -359,7 +353,7 @@ function renderClimatePulseUI() {
   if (elements.pulseRisk) elements.pulseRisk.textContent = `${pulse.label} ${state.climateRisk || 0}`;
   if (elements.pulseResilience) elements.pulseResilience.textContent = `${state.resilienceScore || 0}`;
   if (elements.pulseFocus) {
-    elements.pulseFocus.textContent = pulse.tags?.[0] || '観測';
+    elements.pulseFocus.textContent = pulse.tags?.[0] || t('pulse.observe');
   }
   if (elements.climatePulseText) elements.climatePulseText.textContent = pulse.message;
   if (!elements.climatePulseTags) return;
@@ -406,7 +400,7 @@ function applyPreset(ratios, label){
   updateSliderVisual(elements.fertilizerSlider);
   updateSliderVisual(elements.irrigationSlider);
   updateSliderVisual(elements.techSlider);
-  log(`プリセット適用: ${label}`);
+  log(t('preset.applied', {label: label}));
 }
 
 function saveCustomPreset() {
@@ -415,7 +409,7 @@ function saveCustomPreset() {
   const tech = Number(elements.techSlider.value) || 0;
   const sum = fert + irri + tech;
   if (sum <= 0) {
-    log('カスタム保存失敗: スライダーがゼロのため保存できません。');
+    log(t('preset.customSaveFailZero'));
     return;
   }
   state.customPreset = {
@@ -424,57 +418,58 @@ function saveCustomPreset() {
     techRatio: tech / sum
   };
   updateCustomPresetLabel();
-  log('カスタムプリセットを保存しました。');
+  log(t('preset.customSaved'));
 }
 
 function applyCustomPreset() {
   if (!state.customPreset) {
-    log('カスタムプリセットが未設定です。');
+    log(t('preset.customNotSet'));
     return;
   }
   const { fertRatio, irriRatio, techRatio } = state.customPreset;
-  applyPreset({ fert: fertRatio, irri: irriRatio, tech: techRatio }, 'カスタム');
+  applyPreset({ fert: fertRatio, irri: irriRatio, tech: techRatio }, t('preset.custom'));
 }
 
 function updateCustomPresetLabel() {
   const label = elements.presetCustomLabel;
   if (!label) return;
   if (!state.customPreset) {
-    label.textContent = 'カスタム未設定';
+    label.textContent = t('control.presetCustomUnset');
     return;
   }
   const { fertRatio, irriRatio, techRatio } = state.customPreset;
-  label.textContent = `カスタム: 肥${Math.round(fertRatio * 100)}% / 灌${Math.round(irriRatio * 100)}% / 技${Math.round(techRatio * 100)}%`;
+  label.textContent = t('preset.customLabel', {fert: Math.round(fertRatio * 100), irri: Math.round(irriRatio * 100), tech: Math.round(techRatio * 100)});
 }
 
 function updateChallengeProgressUI() {
   const info = CHALLENGES[state.challenge] || CHALLENGES.free;
+  const challengeName = t('challenge.' + (info.key || 'free') + '.name');
   if (elements.challengeBadge) {
-    elements.challengeBadge.textContent = `チャレンジ: ${info.name} — ${resolveChallengeGoal(state.challenge)}`;
+    elements.challengeBadge.textContent = t('challenge.badge', {name: challengeName, goal: resolveChallengeGoal(state.challenge)});
   }
   if (!elements.challengeProgress) return;
   const chip = elements.challengeProgress;
   chip.classList.remove('chip-success','chip-failed','chip-pending','chip-neutral');
-  let text = '進行中';
+  let text = t('challenge.statusInProgress');
   if (state.challenge === 'free') {
     chip.classList.add('chip-neutral');
-    text = 'フリー';
+    text = t('challenge.free.short');
   } else if (state.challengeStatus === 'success') {
     chip.classList.add('chip-success');
-    text = '達成';
+    text = t('challenge.statusSuccess');
   } else if (state.challengeStatus === 'failed') {
     chip.classList.add('chip-failed');
-    text = '未達成';
+    text = t('challenge.statusFailed');
   } else {
     chip.classList.add('chip-pending');
     if (state.challenge === 'regen_loop') {
       const ndviDelta = Number.isFinite(state.initialAvgNdvi)
         ? (state.avgNdvi - state.initialAvgNdvi).toFixed(3)
         : '0.000';
-      text = `環${state.envScore} / NDVI ${ndviDelta} / 再${state.resilienceScore}`;
+      text = t('challenge.regenProgress', {env: state.envScore, ndvi: ndviDelta, res: state.resilienceScore});
     }
   }
-  chip.textContent = `${info.name}: ${text}`;
+  chip.textContent = challengeName + ': ' + text;
 }
 
 function renderTrendBars(el, values, colorClass, formatter) {
@@ -483,7 +478,7 @@ function renderTrendBars(el, values, colorClass, formatter) {
   if (!values.length) {
     const empty = document.createElement('div');
     empty.className = 'trend-empty';
-    empty.textContent = 'データなし';
+    empty.textContent = t('trend.noData');
     el.appendChild(empty);
     return;
   }
@@ -558,6 +553,7 @@ function addToMiniGraph(value){
 function downloadHistory() {
   const country = COUNTRIES[state.countryKey] || {};
   const challengeInfo = CHALLENGES[state.challenge] || CHALLENGES.free;
+  const challengeKey = challengeInfo.key || 'free';
   const payload = {
     meta: {
       mode: state.mode || 'solo',
@@ -585,7 +581,7 @@ function downloadHistory() {
       } : null,
       challenge: {
         key: state.challenge,
-        name: challengeInfo.name,
+        name: t('challenge.' + challengeKey + '.name'),
         goal: resolveChallengeGoal(state.challenge),
         status: state.challengeStatus
       }
@@ -618,7 +614,7 @@ function renderHistory() {
     const cell = document.createElement('td');
     cell.colSpan = 6;
     cell.className = 'history-empty';
-    cell.textContent = 'まだ履歴がありません。';
+    cell.textContent = t('report.historyEmpty');
     row.appendChild(cell);
     elements.historyBody.appendChild(row);
     return;
@@ -626,7 +622,7 @@ function renderHistory() {
   const recent = state.history.slice(-6).reverse();
   recent.forEach(entry => {
     const row = document.createElement('tr');
-    const alloc = `肥:${formatUSD(entry.allocations.fertilizer)} / 灌:${formatUSD(entry.allocations.irrigation)} / 技:${formatUSD(entry.allocations.tech)}`;
+    const alloc = t('history.alloc', {fert: formatUSD(entry.allocations.fertilizer), irri: formatUSD(entry.allocations.irrigation), tech: formatUSD(entry.allocations.tech)});
     [
       entry.turn,
       alloc,

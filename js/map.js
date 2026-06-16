@@ -9,7 +9,7 @@ async function loadOrGenerateMap(countryKey, year, options = {}) {
     return raw.map(row => row.map(v => (v <= -3000 ? null : v * 0.0001)));
   } catch (error) {
     if (!allowFallback) {
-      throw new Error(`競争モード用のマップデータを読み込めませんでした: ${filePath}`);
+      throw new Error(t('map.fallbackError', { path: filePath }));
     }
     // --- Procedural fallback: パーリン風ノイズ（簡易）
     const base = [];

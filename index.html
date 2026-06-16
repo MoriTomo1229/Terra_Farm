@@ -14,22 +14,22 @@
     <div class="start-header">
       <img src="images/nasa_logo.png" alt="NASA Logo" class="logo"/>
       <div class="start-header-copy">
-        <p class="eyebrow">農業政策シミュレーション</p>
+        <p class="eyebrow" data-i18n="start.eyebrow">農業政策シミュレーション</p>
         <h1>Terra Farm</h1>
-        <p class="subtitle">複雑な農業政策を整理し、限られた予算で生産性と持続可能性の両立を目指すシミュレーションです。</p>
-        <p class="start-lead">国、予算、年代、チャレンジ条件を決めてミッションを開始します。競争モードでは大会条件が固定されます。</p>
+        <p class="subtitle" data-i18n="start.subtitle">複雑な農業政策を整理し、限られた予算で生産性と持続可能性の両立を目指すシミュレーションです。</p>
+        <p class="start-lead" data-i18n="start.lead">国、予算、年代、チャレンジ条件を決めてミッションを開始します。競争モードでは大会条件が固定されます。</p>
       </div>
     </div>
 
     <div class="start-meta-grid">
       <div class="player-input form-field">
-        <label for="player-name-input">プレイヤー名:</label>
-        <input id="player-name-input" type="text" maxlength="20" placeholder="例: TerraPlayer" aria-label="プレイヤー名入力">
+        <label for="player-name-input" data-i18n="start.playerLabel">プレイヤー名:</label>
+        <input id="player-name-input" type="text" maxlength="20" data-i18n-placeholder="start.playerPlaceholder" placeholder="例: TerraPlayer" data-i18n-aria="start.playerAria" aria-label="プレイヤー名入力">
       </div>
 
       <div class="mode-select form-field">
-        <label for="mode-select">プレイモード:</label>
-        <select id="mode-select" aria-label="プレイモード選択">
+        <label for="mode-select" data-i18n="start.modeLabel">プレイモード:</label>
+        <select id="mode-select" data-i18n-aria="start.modeAria" aria-label="プレイモード選択">
           <option value="solo">通常プレイ</option>
           <option value="frontier">フロンティア・ラボ</option>
           <option value="competition">競争モード</option>
@@ -37,40 +37,48 @@
       </div>
 
       <div class="theme-select form-field">
-        <label for="theme-select">表示テーマ:</label>
-        <select id="theme-select" aria-label="表示テーマ選択">
+        <label for="theme-select" data-i18n="start.themeLabel">表示テーマ:</label>
+        <select id="theme-select" data-i18n-aria="start.themeAria" aria-label="表示テーマ選択">
           <option value="dark">ダーク</option>
           <option value="light">ライト</option>
           <option value="signal">シグナル</option>
         </select>
       </div>
-    </div>
-    <p id="mode-helper" class="mode-helper">通常プレイでは国・予算・チャレンジを自由に設定できます。</p>
 
-    <div class="mode-feature-grid" aria-label="新機能の概要">
+      <div class="lang-select form-field">
+        <label for="lang-select" data-i18n="start.langLabel">言語 / Language:</label>
+        <select id="lang-select" data-i18n-aria="start.langAria" aria-label="言語選択 / Language selection">
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </div>
+    <p id="mode-helper" class="mode-helper" data-i18n="mode.solo.description">通常プレイでは国・予算・チャレンジを自由に設定できます。</p>
+
+    <div class="mode-feature-grid" aria-label="New features overview">
       <article class="mode-feature-card">
         <span class="mode-feature-kicker">New Mode</span>
-        <h3>フロンティア・ラボ</h3>
-        <p>高温・乾燥化が進む条件で、短期収益だけでなく再生力を伸ばすモードです。</p>
+        <h3 data-i18n="feature.frontier.title">フロンティア・ラボ</h3>
+        <p data-i18n="feature.frontier.desc">高温・乾燥化が進む条件で、短期収益だけでなく再生力を伸ばすモードです。</p>
       </article>
       <article class="mode-feature-card">
         <span class="mode-feature-kicker">Decision Aid</span>
-        <h3>影響プレビュー</h3>
-        <p>スライダー調整に応じて、配分ミックス、気候リスク、政策の狙いを即時表示します。</p>
+        <h3 data-i18n="feature.preview.title">影響プレビュー</h3>
+        <p data-i18n="feature.preview.desc">スライダー調整に応じて、配分ミックス、気候リスク、政策の狙いを即時表示します。</p>
       </article>
       <article class="mode-feature-card">
         <span class="mode-feature-kicker">Design</span>
-        <h3>シグナルテーマ</h3>
-        <p>ミッション管制のような高コントラスト表示で、重要指標を素早く確認できます。</p>
+        <h3 data-i18n="feature.signal.title">シグナルテーマ</h3>
+        <p data-i18n="feature.signal.desc">ミッション管制のような高コントラスト表示で、重要指標を素早く確認できます。</p>
       </article>
     </div>
 
     <div class="field-block">
       <div class="field-heading">
         <p class="field-label">Mission Setup</p>
-        <h2>国を選択</h2>
+        <h2 data-i18n="start.countryHeading">国を選択</h2>
       </div>
-      <div class="country-list" role="group" aria-label="国を選択">
+      <div class="country-list" role="group" data-i18n-aria="start.countryHeadingAria" aria-label="国を選択">
       <label class="country-option"><input type="radio" name="country" value="usa" checked> <span class="flag">🇺🇸</span> United States</label>
       <label class="country-option"><input type="radio" name="country" value="china"> <span class="flag">🇨🇳</span> China</label>
       <label class="country-option"><input type="radio" name="country" value="india"> <span class="flag">🇮🇳</span> India</label>
@@ -82,13 +90,13 @@
 
     <div class="start-settings-grid">
       <div class="budget-input form-field">
-        <label for="budget-input">初期予算:</label>
-        <input id="budget-input" type="text" placeholder="例: 200B or 500M" value="200B" aria-label="初期予算入力">
+        <label for="budget-input" data-i18n="start.budgetLabel">初期予算:</label>
+        <input id="budget-input" type="text" data-i18n-placeholder="start.budgetPlaceholder" placeholder="例: 200B or 500M" data-i18n-aria="start.budgetAria" aria-label="初期予算入力">
       </div>
 
       <div class="year-select form-field">
-        <label for="year-select">ミッション年:</label>
-        <select id="year-select" aria-label="ミッション年選択">
+        <label for="year-select" data-i18n="start.yearLabel">ミッション年:</label>
+        <select id="year-select" data-i18n-aria="start.yearAria" aria-label="ミッション年選択">
           <option value="01">2001</option>
           <option value="02">2002</option>
           <option value="03">2003</option>
@@ -98,8 +106,8 @@
       </div>
 
       <div class="challenge-select form-field">
-        <label for="challenge-select">チャレンジ:</label>
-        <select id="challenge-select" aria-label="チャレンジ選択">
+        <label for="challenge-select" data-i18n="start.challengeLabel">チャレンジ:</label>
+        <select id="challenge-select" data-i18n-aria="start.challengeAria" aria-label="チャレンジ選択">
           <option value="free">フリー（目標なし）</option>
           <option value="env_guard">環境キーパー（最終環境スコア80以上）</option>
           <option value="growth_drive">成長ドライブ（総収入を初期予算の1.8倍以上）</option>
@@ -112,25 +120,25 @@
       <div class="competition-card-header">
         <div>
           <p class="field-label">Leaderboard Event</p>
-          <h2 id="competition-event-name">競争モード</h2>
-          <p id="competition-event-description" class="competition-event-description">固定シードの大会条件でランキングに挑戦できます。</p>
+          <h2 id="competition-event-name" data-i18n="start.competitionHeader">競争モード</h2>
+          <p id="competition-event-description" class="competition-event-description" data-i18n="start.competitionDesc">固定シードの大会条件でランキングに挑戦できます。</p>
         </div>
-        <button type="button" id="refresh-leaderboard-button" class="chip-button">更新</button>
+        <button type="button" id="refresh-leaderboard-button" class="chip-button" data-i18n="start.leaderboardRefresh">更新</button>
       </div>
-      <p id="competition-status" class="competition-status">大会情報を読み込み中です...</p>
+      <p id="competition-status" class="competition-status" data-i18n="start.competitionLoading">大会情報を読み込み中です...</p>
       <dl id="competition-event-summary" class="competition-summary-list"></dl>
       <div class="leaderboard-block">
         <div class="leaderboard-head">
-          <h3>ランキング Top 10</h3>
-          <p id="leaderboard-player-best" class="leaderboard-player-best">自分の記録: 未登録</p>
+          <h3 data-i18n="start.leaderboardTitle">ランキング Top 10</h3>
+          <p id="leaderboard-player-best" class="leaderboard-player-best" data-i18n="start.leaderboardPlayerBest">自分の記録: 未登録</p>
         </div>
         <ol id="leaderboard-list" class="leaderboard-list"></ol>
-        <p id="leaderboard-empty" class="leaderboard-empty">まだスコアが登録されていません。</p>
+        <p id="leaderboard-empty" class="leaderboard-empty" data-i18n="start.leaderboardEmpty">まだスコアが登録されていません。</p>
       </div>
     </section>
 
     <div class="start-actions">
-      <button id="start-button" aria-label="ミッション開始">ミッション開始</button>
+      <button id="start-button" data-i18n-aria="start.startButton" aria-label="ミッション開始" data-i18n="start.startButton">ミッション開始</button>
     </div>
     <div id="start-error" class="warning" role="alert"></div>
   </div>
@@ -142,38 +150,40 @@
   <header class="header panel" id="main-header" role="banner">
     <img src="images/nasa_logo.png" alt="NASA Logo" class="logo-small"/>
     <div class="title-block">
-      <p class="eyebrow">運営パネル</p>
+      <p class="eyebrow" data-i18n="game.header">運営パネル</p>
       <h1 id="game-title">Terra Farm</h1>
       <div id="selected-country" class="selected-country"></div>
       <div id="session-summary" class="session-summary"></div>
-      <div class="challenge-badge" id="challenge-badge" aria-live="polite">チャレンジ: -</div>
+      <div class="challenge-badge" id="challenge-badge" aria-live="polite" data-i18n="challenge.badgePlaceholder">チャレンジ: -</div>
     </div>
     <div class="header-settings">
-      <label for="theme-select-header">表示テーマ</label>
-      <select id="theme-select-header" aria-label="ゲーム画面の表示テーマ選択">
-        <option value="dark">ダーク</option>
-        <option value="light">ライト</option>
-        <option value="signal">シグナル</option>
-      </select>
+      <div class="header-theme-select">
+        <label for="theme-select-header" data-i18n="game.headerTheme">表示テーマ</label>
+        <select id="theme-select-header" data-i18n-aria="game.headerThemeAria" aria-label="ゲーム画面の表示テーマ選択">
+          <option value="dark">ダーク</option>
+          <option value="light">ライト</option>
+          <option value="signal">シグナル</option>
+        </select>
+      </div>
     </div>
   </header>
 
   <section id="mission-pulse" class="mission-pulse panel" aria-live="polite">
     <div class="mission-pulse-copy">
       <p class="panel-label">Mission Pulse</p>
-      <h2>気候パルス</h2>
-      <p id="mission-pulse-guidance">ミッション開始後に気候リスクと再生力を表示します。</p>
+      <h2 data-i18n="pulse.heading">気候パルス</h2>
+      <p id="mission-pulse-guidance" data-i18n="pulse.placeholder">ミッション開始後に気候リスクと再生力を表示します。</p>
     </div>
     <div class="pulse-metric">
-      <span>リスク</span>
+      <span data-i18n="pulse.risk">リスク</span>
       <strong id="pulse-risk">-</strong>
     </div>
     <div class="pulse-metric">
-      <span>レジリエンス</span>
+      <span data-i18n="pulse.resilience">レジリエンス</span>
       <strong id="pulse-resilience">-</strong>
     </div>
     <div class="pulse-metric">
-      <span>次の焦点</span>
+      <span data-i18n="pulse.focus">次の焦点</span>
       <strong id="pulse-focus">-</strong>
     </div>
   </section>
@@ -182,134 +192,134 @@
     <div id="status-display" class="panel panel-section status-panel">
       <div class="panel-heading">
         <p class="panel-label">Current State</p>
-        <h2>現在の状況</h2>
+        <h2 data-i18n="status.heading">現在の状況</h2>
       </div>
-      <p>ターン: <strong><span id="turn-counter">0</span>/<span id="max-turns">10</span></strong></p>
-      <p>予算: <strong id="budget-value">$0</strong></p>
-      <p>総収入: <strong id="total-food-value">$0</strong></p>
-      <p>環境スコア: <strong id="env-score-value">70</strong></p>
-      <p>レジリエンス: <strong id="resilience-value">50</strong></p>
-      <p>気候リスク: <strong id="climate-risk-value">0</strong></p>
-      <p>時代: <strong id="era-value">-</strong></p>
-      <p>技術ポイント: <strong id="tech-points-value">0</strong></p>
-      <p class="challenge-progress-row">チャレンジ進行度: <span id="challenge-progress" class="chip chip-pending">-</span></p>
-      <p>作物: <strong id="crop-value">-</strong></p>
+      <p><span data-i18n="status.turn">ターン:</span> <strong><span id="turn-counter">0</span>/<span id="max-turns">10</span></strong></p>
+      <p><span data-i18n="status.budget">予算:</span> <strong id="budget-value">$0</strong></p>
+      <p><span data-i18n="status.revenue">総収入:</span> <strong id="total-food-value">$0</strong></p>
+      <p><span data-i18n="status.env">環境スコア:</span> <strong id="env-score-value">70</strong></p>
+      <p><span data-i18n="status.resilience">レジリエンス:</span> <strong id="resilience-value">50</strong></p>
+      <p><span data-i18n="status.climateRisk">気候リスク:</span> <strong id="climate-risk-value">0</strong></p>
+      <p><span data-i18n="status.era">時代:</span> <strong id="era-value">-</strong></p>
+      <p><span data-i18n="status.tech">技術ポイント:</span> <strong id="tech-points-value">0</strong></p>
+      <p class="challenge-progress-row"><span data-i18n="status.challengeProgress">チャレンジ進行度:</span> <span id="challenge-progress" class="chip chip-pending">-</span></p>
+      <p><span data-i18n="status.crop">作物:</span> <strong id="crop-value">-</strong></p>
 
       <hr>
-      <p>平均NDVI: <strong id="ndvi-value">0</strong></p>
-      <p>土壌水分: <strong id="moisture-value">0</strong></p>
-      <p>降水量: <strong id="precipitation-value">0</strong></p>
-      <p>気温: <strong id="temperature-value">0</strong> ℃</p>
+      <p><span data-i18n="status.ndvi">平均NDVI:</span> <strong id="ndvi-value">0</strong></p>
+      <p><span data-i18n="status.moisture">土壌水分:</span> <strong id="moisture-value">0</strong></p>
+      <p><span data-i18n="status.precipitation">降水量:</span> <strong id="precipitation-value">0</strong></p>
+      <p><span data-i18n="status.temperature">気温:</span> <strong id="temperature-value">0</strong> ℃</p>
 
       <div class="legend">
-        <span class="legend-box p1"></span>貧弱
-        <span class="legend-box p2"></span>やや低
-        <span class="legend-box p3"></span>中
-        <span class="legend-box p4"></span>やや高
-        <span class="legend-box p5"></span>高
-        <span class="legend-box p6"></span>非常に高
+        <span class="legend-box p1"></span><span data-i18n="status.legendPoor">貧弱</span>
+        <span class="legend-box p2"></span><span data-i18n="status.legendLow">やや低</span>
+        <span class="legend-box p3"></span><span data-i18n="status.legendMid">中</span>
+        <span class="legend-box p4"></span><span data-i18n="status.legendMedHigh">やや高</span>
+        <span class="legend-box p5"></span><span data-i18n="status.legendHigh">高</span>
+        <span class="legend-box p6"></span><span data-i18n="status.legendVeryHigh">非常に高</span>
       </div>
 
-      <div id="map" class="map-grid" aria-label="NDVIマップ"></div>
+      <div id="map" class="map-grid" data-i18n-aria="status.mapAria" aria-label="NDVIマップ"></div>
 
       <div class="small-panel panel">
         <div id="mini-graph" style="display:flex; gap:4px; align-items:flex-end; height:90px;"></div>
       </div>
       <div id="trend-chart" class="small-panel panel">
-        <h4>ターンごとのトレンド</h4>
+        <h4 data-i18n="trend.heading">ターンごとのトレンド</h4>
         <div class="trend-grid">
           <div class="trend-series">
-            <div class="trend-series-header"><span class="dot revenue"></span>収入 <span id="trend-revenue-last" class="trend-last">-</span></div>
-            <div class="trend-bars" id="trend-revenue" aria-label="収入の推移"></div>
-            <svg class="trend-line" id="trend-revenue-line" viewBox="0 0 120 80" role="img" aria-label="収入の折れ線"></svg>
+            <div class="trend-series-header"><span class="dot revenue"></span><span data-i18n="trend.revenue">収入</span> <span id="trend-revenue-last" class="trend-last">-</span></div>
+            <div class="trend-bars" id="trend-revenue" data-i18n-aria="trend.revenueAria" aria-label="収入の推移"></div>
+            <svg class="trend-line" id="trend-revenue-line" viewBox="0 0 120 80" role="img" data-i18n-aria="trend.revenueLineAria" aria-label="収入の折れ線"></svg>
           </div>
           <div class="trend-series">
-            <div class="trend-series-header"><span class="dot ndvi"></span>平均NDVI <span id="trend-ndvi-last" class="trend-last">-</span></div>
-            <div class="trend-bars" id="trend-ndvi" aria-label="平均NDVIの推移"></div>
-            <svg class="trend-line" id="trend-ndvi-line" viewBox="0 0 120 80" role="img" aria-label="平均NDVIの折れ線"></svg>
+            <div class="trend-series-header"><span class="dot ndvi"></span><span data-i18n="trend.ndvi">平均NDVI</span> <span id="trend-ndvi-last" class="trend-last">-</span></div>
+            <div class="trend-bars" id="trend-ndvi" data-i18n-aria="trend.ndviAria" aria-label="平均NDVIの推移"></div>
+            <svg class="trend-line" id="trend-ndvi-line" viewBox="0 0 120 80" role="img" data-i18n-aria="trend.ndviLineAria" aria-label="平均NDVIの折れ線"></svg>
           </div>
           <div class="trend-series">
-            <div class="trend-series-header"><span class="dot env"></span>環境 <span id="trend-env-last" class="trend-last">-</span></div>
-            <div class="trend-bars" id="trend-env" aria-label="環境スコアの推移"></div>
-            <svg class="trend-line" id="trend-env-line" viewBox="0 0 120 80" role="img" aria-label="環境スコアの折れ線"></svg>
+            <div class="trend-series-header"><span class="dot env"></span><span data-i18n="trend.env">環境</span> <span id="trend-env-last" class="trend-last">-</span></div>
+            <div class="trend-bars" id="trend-env" data-i18n-aria="trend.envAria" aria-label="環境スコアの推移"></div>
+            <svg class="trend-line" id="trend-env-line" viewBox="0 0 120 80" role="img" data-i18n-aria="trend.envLineAria" aria-label="環境スコアの折れ線"></svg>
           </div>
           <div class="trend-series">
-            <div class="trend-series-header"><span class="dot tech"></span>技術Pt <span id="trend-tech-last" class="trend-last">-</span></div>
-            <div class="trend-bars" id="trend-tech" aria-label="技術ポイントの推移"></div>
-            <svg class="trend-line" id="trend-tech-line" viewBox="0 0 120 80" role="img" aria-label="技術ポイントの折れ線"></svg>
+            <div class="trend-series-header"><span class="dot tech"></span><span data-i18n="trend.tech">技術Pt</span> <span id="trend-tech-last" class="trend-last">-</span></div>
+            <div class="trend-bars" id="trend-tech" data-i18n-aria="trend.techAria" aria-label="技術ポイントの推移"></div>
+            <svg class="trend-line" id="trend-tech-line" viewBox="0 0 120 80" role="img" data-i18n-aria="trend.techLineAria" aria-label="技術ポイントの折れ線"></svg>
           </div>
         </div>
-        <p class="trend-hint">直近のターンを表示（最大12件）</p>
+        <p class="trend-hint" data-i18n="trend.hint">直近のターンを表示（最大12件）</p>
       </div>
     </div>
 
     <div class="panel panel-section controls-panel">
       <div class="panel-heading">
         <p class="panel-label">Investment Plan</p>
-        <h2>政策と投資</h2>
+        <h2 data-i18n="control.heading">政策と投資</h2>
       </div>
       <div class="choice-row">
-        <label for="crop-select">作物選択: </label>
+        <label for="crop-select" data-i18n="control.cropLabel">作物選択:</label>
         <select id="crop-select"></select>
       </div>
 
       <div class="preset-row">
-        <span class="muted">プリセット:</span>
+        <span class="muted" data-i18n="control.presetLabel">プリセット:</span>
         <div class="preset-buttons">
-          <button type="button" id="preset-env" class="chip-button">環境重視</button>
-          <button type="button" id="preset-revenue" class="chip-button">収益重視</button>
-          <button type="button" id="preset-tech" class="chip-button">技術重視</button>
-          <button type="button" id="preset-custom-apply" class="chip-button chip-custom">カスタム適用</button>
-          <button type="button" id="preset-custom-save" class="chip-button chip-custom-outline">現在値を保存</button>
+          <button type="button" id="preset-env" class="chip-button" data-i18n="control.presetEnv">環境重視</button>
+          <button type="button" id="preset-revenue" class="chip-button" data-i18n="control.presetRevenue">収益重視</button>
+          <button type="button" id="preset-tech" class="chip-button" data-i18n="control.presetTech">技術重視</button>
+          <button type="button" id="preset-custom-apply" class="chip-button chip-custom" data-i18n="control.presetCustomApply">カスタム適用</button>
+          <button type="button" id="preset-custom-save" class="chip-button chip-custom-outline" data-i18n="control.presetCustomSave">現在値を保存</button>
         </div>
-        <div class="custom-preset-label" id="preset-custom-label">カスタム未設定</div>
+        <div class="custom-preset-label" id="preset-custom-label" data-i18n="control.presetCustomUnset">カスタム未設定</div>
       </div>
 
       <div class="slider-row">
-        <label for="fertilizer-slider">肥料: <span id="fertilizer-value">$0</span></label>
-        <input id="fertilizer-slider" type="range" min="0" max="0" value="0" title="肥料の投資額" placeholder="肥料の投資額" aria-label="肥料の投資額を調整">
+        <label for="fertilizer-slider"><span data-i18n="control.fertilizer">肥料:</span> <span id="fertilizer-value">$0</span></label>
+        <input id="fertilizer-slider" type="range" min="0" max="0" value="0" data-i18n-title="control.fertilizerAria" title="肥料の投資額" data-i18n-aria="control.fertilizerAria" aria-label="肥料の投資額を調整">
       </div>
 
       <div class="slider-row">
-        <label for="irrigation-slider">灌漑: <span id="irrigation-value">$0</span></label>
-        <input id="irrigation-slider" type="range" min="0" max="0" value="0" title="灌漑の投資額" placeholder="灌漑の投資額" aria-label="灌漑の投資額を調整">
+        <label for="irrigation-slider"><span data-i18n="control.irrigation">灌漑:</span> <span id="irrigation-value">$0</span></label>
+        <input id="irrigation-slider" type="range" min="0" max="0" value="0" data-i18n-title="control.irrigationAria" title="灌漑の投資額" data-i18n-aria="control.irrigationAria" aria-label="灌漑の投資額を調整">
       </div>
 
       <div class="slider-row">
-        <label for="tech-slider">技術: <span id="tech-value">$0</span></label>
-        <input id="tech-slider" type="range" min="0" max="0" value="0" title="技術の投資額" placeholder="技術の投資額" aria-label="技術の投資額を調整">
+        <label for="tech-slider"><span data-i18n="control.tech">技術:</span> <span id="tech-value">$0</span></label>
+        <input id="tech-slider" type="range" min="0" max="0" value="0" data-i18n-title="control.techAria" title="技術の投資額" data-i18n-aria="control.techAria" aria-label="技術の投資額を調整">
       </div>
 
-      <p>残り予算: <strong id="remaining-budget">$0</strong></p>
+      <p><span data-i18n="control.remainingBudget">残り予算:</span> <strong id="remaining-budget">$0</strong></p>
       <div id="allocation-warning" class="warning" role="alert"></div>
 
       <div id="impact-preview" class="impact-preview small-panel panel" aria-live="polite">
-        <h4>影響プレビュー</h4>
+        <h4 data-i18n="feature.preview.title">影響プレビュー</h4>
         <div class="impact-grid">
           <div>
-            <span>配分</span>
-            <strong id="preview-mix">未設定</strong>
+            <span data-i18n="preview.mixUnallocated">配分</span>
+            <strong id="preview-mix" data-i18n="preview.mixNotSet">未設定</strong>
           </div>
           <div>
-            <span>気候対応</span>
+            <span data-i18n="preview.outcomeAdaptation">気候対応</span>
             <strong id="preview-risk">-</strong>
           </div>
           <div>
-            <span>政策シグナル</span>
+            <span data-i18n="preview.outcomeBalanced">政策シグナル</span>
             <strong id="preview-outcome">-</strong>
           </div>
         </div>
-        <p id="preview-guidance" class="preview-guidance">スライダーを動かすと、このターンの狙いが表示されます。</p>
+        <p id="preview-guidance" class="preview-guidance" data-i18n="preview.guidanceInit">スライダーを動かすと、このターンの狙いが表示されます。</p>
       </div>
 
       <div class="buttons">
-        <button id="execute-turn-button" class="button-primary">ターンを実行</button>
-        <button id="auto-allocate-button" class="button-secondary">自動配分</button>
-        <button id="special-skill" class="button-ghost">国家スキル</button>
+        <button id="execute-turn-button" class="button-primary" data-i18n="control.execute">ターンを実行</button>
+        <button id="auto-allocate-button" class="button-secondary" data-i18n="control.autoAllocate">自動配分</button>
+        <button id="special-skill" class="button-ghost" data-i18n="control.specialSkill">国家スキル</button>
       </div>
 
       <div class="small-panel panel">
-        <h4>アンロック</h4>
+        <h4 data-i18n="control.unlockHeading">アンロック</h4>
         <ul id="unlock-list"></ul>
       </div>
     </div>
@@ -317,33 +327,33 @@
     <div class="panel panel-section report-panel">
       <div class="panel-heading">
         <p class="panel-label">Turn Report</p>
-        <h2>レポート</h2>
+        <h2 data-i18n="report.heading">レポート</h2>
       </div>
-      <p class="result" id="turn-result-text">未実行</p>
+      <p class="result" id="turn-result-text" data-i18n="report.noTurn">未実行</p>
       <p class="event" id="event-text">-</p>
       <p class="un-report" id="un-report">-</p>
       <div id="climate-pulse-panel" class="small-panel panel climate-pulse-panel">
-        <h4>気候パルス解析</h4>
-        <p id="climate-pulse-text">ミッション開始後に表示されます。</p>
-        <div id="climate-pulse-tags" class="pulse-tags" aria-label="気候パルスタグ"></div>
+        <h4 data-i18n="report.climatePulseHeading">気候パルス解析</h4>
+        <p id="climate-pulse-text" data-i18n="report.climatePulsePlaceholder">ミッション開始後に表示されます。</p>
+        <div id="climate-pulse-tags" class="pulse-tags" data-i18n-aria="report.climatePulseTagsAria" aria-label="気候パルスタグ"></div>
       </div>
       <div id="log" class="log-area" aria-live="polite"></div>
       <div id="history-panel" class="small-panel panel">
-        <h4>ターン履歴</h4>
+        <h4 data-i18n="report.historyHeading">ターン履歴</h4>
         <div class="history-table-wrap">
-          <table class="history-table" aria-label="ターン履歴の表">
+          <table class="history-table" data-i18n-aria="report.historyTableAria" aria-label="ターン履歴の表">
             <thead>
               <tr>
-                <th scope="col">ターン</th>
-                <th scope="col">配分</th>
-                <th scope="col">NDVI</th>
-                <th scope="col">収入</th>
-                <th scope="col">環境</th>
-                <th scope="col">リスク/再生</th>
+                <th scope="col" data-i18n="report.historyTurn">ターン</th>
+                <th scope="col" data-i18n="report.historyAlloc">配分</th>
+                <th scope="col" data-i18n="report.historyNdvi">NDVI</th>
+                <th scope="col" data-i18n="report.historyRevenue">収入</th>
+                <th scope="col" data-i18n="report.historyEnv">環境</th>
+                <th scope="col" data-i18n="report.historyRiskRegen">リスク/再生</th>
               </tr>
             </thead>
             <tbody id="history-body">
-              <tr><td colspan="6" class="history-empty">まだ履歴がありません。</td></tr>
+              <tr><td colspan="6" class="history-empty" data-i18n="report.historyEmpty">まだ履歴がありません。</td></tr>
             </tbody>
           </table>
         </div>
@@ -353,22 +363,23 @@
 
   <div id="game-over-modal" class="modal-hidden" role="dialog" aria-modal="true">
     <div class="modal-content panel">
-      <h2>ミッション完了</h2>
-      <p>総収入: <span id="final-food"></span></p>
-      <p>最終環境スコア: <span id="final-env"></span></p>
-      <p>最終技術レベル: <span id="final-tech"></span></p>
+      <h2 data-i18n="gameover.heading">ミッション完了</h2>
+      <p><span data-i18n="gameover.totalRevenue">総収入:</span> <span id="final-food"></span></p>
+      <p><span data-i18n="gameover.finalEnv">最終環境スコア:</span> <span id="final-env"></span></p>
+      <p><span data-i18n="gameover.finalTech">最終技術レベル:</span> <span id="final-tech"></span></p>
       <p id="final-challenge" class="challenge-final"></p>
       <hr>
-      <p>最終スコア: <strong id="final-score"></strong></p>
+      <p><span data-i18n="gameover.finalScore">最終スコア:</span> <strong id="final-score"></strong></p>
       <p id="final-competition-status" class="competition-final-status"></p>
       <div class="modal-actions">
-        <button id="retry-submit-score" type="button" hidden>スコアを再送信</button>
-        <button id="replay-button">もう一度プレイ</button>
-        <button id="download-log">ログをダウンロード</button>
+        <button id="retry-submit-score" type="button" hidden data-i18n="gameover.retrySubmit">スコアを再送信</button>
+        <button id="replay-button" data-i18n="gameover.replay">もう一度プレイ</button>
+        <button id="download-log" data-i18n="gameover.downloadLog">ログをダウンロード</button>
       </div>
     </div>
   </div>
 
+  <script src="js/i18n.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/phina.js@0.2.3/build/phina.js" defer></script>
   <script src="js/config.js" defer></script>
   <script src="js/state.js" defer></script>

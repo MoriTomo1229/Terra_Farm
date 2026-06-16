@@ -52,25 +52,25 @@ function updateClimatePulse() {
   state.resilienceScore = calculateResilienceScore();
 
   const tags = [];
-  if (dryness >= 55) tags.push('乾燥圧');
-  if (heat >= 45) tags.push('高温');
-  if (rainDeficit >= 32) tags.push('降水不足');
-  if (state.envScore < 60) tags.push('環境低下');
-  if (state.resilienceScore < 55) tags.push('再生力不足');
-  if (!tags.length) tags.push('安定観測');
+  if (dryness >= 55) tags.push(t('pulse.tagDryness'));
+  if (heat >= 45) tags.push(t('pulse.tagHeat'));
+  if (rainDeficit >= 32) tags.push(t('pulse.tagRainDeficit'));
+  if (state.envScore < 60) tags.push(t('pulse.tagEnvDecline'));
+  if (state.resilienceScore < 55) tags.push(t('pulse.tagRegenInsufficient'));
+  if (!tags.length) tags.push(t('pulse.tagStable'));
 
   const riskLevels = (GAME_CONFIG.climatePulse && GAME_CONFIG.climatePulse.riskLevels) || { crisis: 75, warning: 55, caution: 35 };
-  let label = '安定';
-  let message = '気候条件は管理可能です。収益と環境のバランスを維持してください。';
+  let label = t('risk.stable');
+  let message = t('pulse.msgStable');
   if (state.climateRisk >= riskLevels.crisis) {
-    label = '危機';
-    message = '気候リスクが高い状態です。灌漑と技術投資で損失を抑え、肥料偏重を避けてください。';
+    label = t('risk.crisis');
+    message = t('pulse.msgCrisis');
   } else if (state.climateRisk >= riskLevels.warning) {
-    label = '警戒';
-    message = '気候ショックの兆候があります。灌漑比率を上げるとレジリエンスを維持しやすくなります。';
+    label = t('risk.warning');
+    message = t('pulse.msgWarning');
   } else if (state.climateRisk >= riskLevels.caution) {
-    label = '注意';
-    message = '一部の気候条件に負荷があります。技術投資で次ターン以降の対応力を高められます。';
+    label = t('risk.caution');
+    message = t('pulse.msgCaution');
   }
 
   state.climatePulse = { label, message, tags };
@@ -100,27 +100,27 @@ function activateSkill() {
     case 'egypt':
       // 次のターン、灌漑効果+100%
       state.unlocked.nileBuff = 2;
-      msg = '💧 ナイルの恵み: 次のターンの灌漑効果が2倍！';
+      msg = t('skill.egypt');
       break;
     case 'usa':
       state.unlocked.agriBoost = true; // 技術効率+20%
-      msg = '🧬 AgriBoost: 技術開発効率が20%向上！';
+      msg = t('skill.usa');
       break;
     case 'india':
       state.unlocked.monsoon = true; // 降水の悪影響が小さく
-      msg = '🌧️ Monsoon Mastery: 降水のブレを抑制！';
+      msg = t('skill.india');
       break;
     case 'brazil':
       state.unlocked.amazonShield = true; // 環境スコア低下を半減
-      msg = '🌳 Amazon Shield: 環境ダメージを半減！';
+      msg = t('skill.brazil');
       break;
     case 'china':
       state.unlocked.dragonPlan = true; // 生産+5%
-      msg = '🐉 Dragon Plan: 生産性に恒久+5%ボーナス！';
+      msg = t('skill.china');
       break;
     case 'ireland':
       state.unlocked.emerald = true; // NDVI自然回復を強化
-      msg = '🍀 Emerald Surge: 植生の自然回復が強化！';
+      msg = t('skill.ireland');
       break;
   }
   state.skillUsed = true;
@@ -135,15 +135,15 @@ function checkUnlocks() {
   const C = GAME_CONFIG.technology.unlocks;
   if (state.techPoints > C.ecoFertilizer && !state.unlocked.ecoFertilizer) {
     state.unlocked.ecoFertilizer = true;
-    list.push("🌱 エコ肥料: 肥料による環境悪化が半減");
+    list.push(t('unlock.ecoFertilizer'));
   }
   if (state.techPoints > C.precisionAg && !state.unlocked.precisionAg) {
     state.unlocked.precisionAg = true;
-    list.push("📡 精密農業: NDVIの上限がわずかに上昇（0.98）");
+    list.push(t('unlock.precisionAg'));
   }
   if (state.techPoints > C.orbitalNet && !state.unlocked.orbitalNet) {
     state.unlocked.orbitalNet = true;
-    list.push("🛰️ 軌道ネット: 収量に+8%の補正");
+    list.push(t('unlock.orbitalNet'));
   }
   list.forEach(pushUnlock);
   return list;
@@ -211,7 +211,7 @@ function executeTurn() {
   const tech = Number(elements.techSlider.value) || 0;
   const country = COUNTRIES[state.countryKey];
   if (fert + irri + tech > state.budget) {
-    elements.allocationWarning.textContent = '予算オーバーです！';
+    elements.allocationWarning.textContent = t('main.budgetOver');
     return;
   }
   state.isTurnProcessing = true;
@@ -298,16 +298,16 @@ function executeTurn() {
   const monsoonMitigation = state.unlocked.monsoon ? E.monsoonMitigation : 1.0;
 
   if (droughtRisk && irri < state.budget * E.drought.irriBudgetRatio && gameRandom() < E.drought.chance * monsoonMitigation) {
-    production = Math.round(production * E.drought.penalty); event = '🚨 干ばつにより生産量が大幅に減少。';
+    production = Math.round(production * E.drought.penalty); event = t('event.drought');
   } else if (state.temperature > E.heatwave.tempThreshold && gameRandom() < E.heatwave.chance * monsoonMitigation) {
-    production = Math.round(production * E.heatwave.penalty); event = '🦠 熱波による害虫発生で生産量が減少。';
+    production = Math.round(production * E.heatwave.penalty); event = t('event.heatwave');
   } else if (state.precipitation > E.rain.precipThreshold && gameRandom() < E.rain.chance) {
-    production = Math.round(production * E.rain.bonus); event = '☔ 恵みの雨により生産量が増加。';
+    production = Math.round(production * E.rain.bonus); event = t('event.rain');
   } else if (gameRandom() < E.random.chance) {
     const r = gameRandom();
-    if (r < E.random.sandstorm.chance) { production = Math.round(production * E.random.sandstorm.penalty); event = '🌪️ 砂嵐が発生し、植生が損傷。'; }
-    else if (r < E.random.sandstorm.chance + E.random.commsFailure.chance) { elements.ndviValue.textContent = '？'; event = '🛰️ 衛星通信障害 — 一部データが欠落。'; }
-    else { state.envScore = Math.max(0, state.envScore - E.random.industrialPollution.penalty); event = '🏭 近隣の工業活動により環境スコア低下。'; }
+    if (r < E.random.sandstorm.chance) { production = Math.round(production * E.random.sandstorm.penalty); event = t('event.sandstorm'); }
+    else if (r < E.random.sandstorm.chance + E.random.commsFailure.chance) { elements.ndviValue.textContent = '？'; event = t('event.commsFailure'); }
+    else { state.envScore = Math.max(0, state.envScore - E.random.industrialPollution.penalty); event = t('event.industrialPollution'); }
   }
 
   const modeClimateCfg2 = GAME_CONFIG[state.mode];
@@ -318,7 +318,7 @@ function executeTurn() {
     if (state.climateRisk >= 70 && underPrepared && gameRandom() < 0.42) {
       production = Math.round(production * 0.84);
       state.envScore = Math.max(0, state.envScore - 2);
-      const shockText = 'フロンティア気候ショックで水ストレスが拡大。';
+      const shockText = t('event.frontierShock');
       event = event ? `${event} ${shockText}` : shockText;
     }
   }
@@ -369,7 +369,7 @@ function executeTurn() {
       precipitation: state.precipitation,
       temperature: state.temperature
     },
-    event: event || '特に大きなイベントはありませんでした。',
+    event: event || t('event.none'),
     newUnlocks
   });
   if (typeof renderHistory === 'function') renderHistory();
@@ -377,9 +377,9 @@ function executeTurn() {
   if (typeof updateChallengeProgressUI === 'function') updateChallengeProgressUI();
 
   // 結果表示
-  elements.turnResultText.textContent = `${crop.name}を${production.toLocaleString()}トン生産、収入: ${formatUSD(revenue)}`;
-  elements.eventText.textContent = event || '特に大きなイベントはありませんでした。';
-  log(`ターン ${state.turn}: 収入 +${formatUSD(revenue)}. ${event || 'イベントなし'}`);
+  elements.turnResultText.textContent = t('turn.result', {crop: crop.name, production: production.toLocaleString(), revenue: formatUSD(revenue)});
+  elements.eventText.textContent = event || t('event.none');
+  log(t('turn.log', {turn: state.turn, revenue: formatUSD(revenue), event: event || t('turn.logNoEvent')}));
 
   // ミニグラフ棒追加
   addToMiniGraph(revenue);

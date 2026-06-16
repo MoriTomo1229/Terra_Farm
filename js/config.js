@@ -73,9 +73,9 @@ function resolveChallengeGoal(challengeKey) {
   if (!info) return '';
   if (challengeKey === 'regen_loop') {
     const cfg = GAME_CONFIG.frontier;
-    return `環境${cfg.envGoal}以上 / 初期NDVI+${cfg.ndviGainGoal} / レジリエンス${cfg.resilienceGoal}以上`;
+    return t('challenge.regen_loop.goalTemplate', { env: cfg.envGoal, ndvi: cfg.ndviGainGoal, res: cfg.resilienceGoal });
   }
-  return info.goal || '';
+  return t('challenge.' + challengeKey + '.goal') || '';
 }
 
 // ==================== ゲームバランス設定 ====================

@@ -168,14 +168,14 @@ function applyCompetitionModeToInputs() {
 
   if (!elements.modeHelper) return;
   if (competitionMode && event) {
-    elements.modeHelper.textContent = `競争モードでは「${event.name}」の条件で固定されます。プレイヤー名を入力して開始してください。`;
+    elements.modeHelper.textContent = t('comp.modeHelperCompetition', {name: event.name});
   } else if (competitionMode) {
-    elements.modeHelper.textContent = '競争モードを準備中です。大会情報の取得を待ってから開始してください。';
+    elements.modeHelper.textContent = t('comp.modeHelperCompetitionPreparing');
   } else if (frontierMode) {
     const modeInfo = PLAY_MODES.frontier;
-    elements.modeHelper.textContent = `${modeInfo.name}: ${modeInfo.description} チャレンジは「再生ループ」に固定されます。`;
+    elements.modeHelper.textContent = t('comp.modeHelperFrontier');
   } else {
-    elements.modeHelper.textContent = '通常プレイでは国・予算・チャレンジを自由に設定できます。';
+    elements.modeHelper.textContent = t('comp.modeHelperSolo');
   }
 }
 
@@ -187,12 +187,12 @@ function renderCompetitionSummary(event) {
   const country = COUNTRIES[event.countryKey];
   const challenge = CHALLENGES[event.challengeKey] || CHALLENGES.free;
   const summaryRows = [
-    ['大会条件', event.name],
-    ['国 / 年', `${country?.flag || ''} ${country?.name || event.countryKey} / ${2000 + parseInt(event.missionYear, 10)}`],
-    ['初期予算', formatUSD(event.startingBudget)],
-    ['チャレンジ', challenge.name],
-    ['ターン数', `${event.turnCount} ターン`],
-    ['ルール版', event.rulesetVersion]
+    [t('comp.summaryEventName'), event.name],
+    [t('comp.summaryCountry'), `${country?.flag || ''} ${country?.name || event.countryKey} / ${2000 + parseInt(event.missionYear, 10)}`],
+    [t('comp.summaryBudget'), formatUSD(event.startingBudget)],
+    [t('comp.summaryChallenge'), t('challenge.' + challenge.key + '.name')],
+    [t('comp.summaryTurnsLabel'), t('comp.summaryTurns', {count: event.turnCount})],
+    [t('comp.summaryRuleset'), event.rulesetVersion]
   ];
 
   summaryRows.forEach(([label, value]) => {
@@ -215,13 +215,13 @@ function renderCompetitionLeaderboard() {
   const playerEntry = competitionState.playerEntry;
   elements.leaderboardEmpty.hidden = entries.length > 0;
   elements.leaderboardEmpty.textContent = competitionState.loadError
-    ? 'ランキングを取得できませんでした。'
-    : 'まだスコアが登録されていません。';
+    ? t('comp.leaderboardLoadError')
+    : t('comp.leaderboardEmpty');
 
   if (playerEntry) {
-    elements.leaderboardPlayerBest.textContent = `自分の記録: ${playerEntry.rank}位 / ${playerEntry.finalScore.toLocaleString()} 点`;
+    elements.leaderboardPlayerBest.textContent = t('comp.leaderboardPlayerBest', {rank: playerEntry.rank, score: playerEntry.finalScore.toLocaleString()});
   } else {
-    elements.leaderboardPlayerBest.textContent = '自分の記録: 未登録';
+    elements.leaderboardPlayerBest.textContent = t('comp.leaderboardPlayerBestNone');
   }
 
   entries.forEach((entry, index) => {
@@ -233,7 +233,7 @@ function renderCompetitionLeaderboard() {
 
     const rank = document.createElement('span');
     rank.className = 'leaderboard-rank';
-    rank.textContent = `${entry.rank || index + 1}位`;
+    rank.textContent = t('comp.leaderboardRank', {rank: entry.rank || index + 1});
 
     const main = document.createElement('div');
     main.className = 'leaderboard-main';
@@ -244,12 +244,12 @@ function renderCompetitionLeaderboard() {
 
     const meta = document.createElement('span');
     meta.className = 'leaderboard-meta';
-    const missionYear = entry.missionYear ? `${2000 + parseInt(entry.missionYear, 10)}年` : '';
-    meta.textContent = `${missionYear} / 環境 ${entry.envScore} / 技術 ${entry.eraIndex}`;
+    const missionYear = entry.missionYear ? (2000 + parseInt(entry.missionYear, 10)) : '';
+    meta.textContent = t('comp.leaderboardMeta', {year: missionYear, env: entry.envScore, era: entry.eraIndex});
 
     const score = document.createElement('span');
     score.className = 'leaderboard-score';
-    score.textContent = `${entry.finalScore.toLocaleString()} 点`;
+    score.textContent = t('comp.leaderboardScore', {score: entry.finalScore.toLocaleString()});
 
     main.appendChild(name);
     main.appendChild(meta);
@@ -269,22 +269,22 @@ function renderCompetitionCard() {
   }
 
   if (elements.competitionEventName) {
-    elements.competitionEventName.textContent = event ? event.name : '競争モード';
+    elements.competitionEventName.textContent = event ? event.name : t('mode.competition.name');
   }
   if (elements.competitionEventDescription) {
     elements.competitionEventDescription.textContent = event
       ? event.description
-      : '固定シードの大会条件でランキングに挑戦できます。';
+      : t('start.competitionDesc');
   }
   if (elements.competitionStatus) {
     if (competitionState.isLoading) {
-      elements.competitionStatus.textContent = '大会情報を読み込み中です...';
+      elements.competitionStatus.textContent = t('comp.loadingStatus');
     } else if (competitionState.loadError) {
-      elements.competitionStatus.textContent = `競争モードを読み込めません: ${competitionState.loadError}`;
+      elements.competitionStatus.textContent = t('comp.loadError', {error: competitionState.loadError});
     } else if (event) {
-      elements.competitionStatus.textContent = '現在の大会条件です。競争モードではこの設定で固定されます。';
+      elements.competitionStatus.textContent = t('comp.currentEvent');
     } else {
-      elements.competitionStatus.textContent = '利用可能な大会がまだありません。';
+      elements.competitionStatus.textContent = t('comp.noEvent');
     }
   }
 
@@ -305,11 +305,11 @@ function renderCompetitionFinalStatus(text = '', status = '') {
 function renderSessionSummary() {
   if (!elements.sessionSummary) return;
   const parts = [];
-  if (state.playerName) parts.push(`プレイヤー: ${state.playerName}`);
+  if (state.playerName) parts.push(t('session.player', {name: state.playerName}));
   const modeInfo = PLAY_MODES[state.mode] || PLAY_MODES.solo;
-  parts.push(`モード: ${modeInfo.name}`);
+  parts.push(t('session.mode', {name: t('mode.' + state.mode + '.name')}));
   if (state.mode === 'competition' && state.competitionEventName) {
-    parts.push(`大会: ${state.competitionEventName}`);
+    parts.push(t('session.tournament', {name: state.competitionEventName}));
   }
   elements.sessionSummary.textContent = parts.join(' / ');
 }
@@ -420,7 +420,7 @@ function buildCompetitionSubmissionPayload() {
 async function submitCompetitionResult() {
   if (state.mode !== 'competition' || !state.competitionEventId || competitionState.isSubmitting) return;
   competitionState.isSubmitting = true;
-  renderCompetitionFinalStatus('ランキングへ送信中です...', 'pending');
+  renderCompetitionFinalStatus(t('comp.submitting'), 'pending');
   try {
     const payload = buildCompetitionSubmissionPayload();
     const data = await fetchCompetitionJson('/api/leaderboard', {
@@ -431,12 +431,12 @@ async function submitCompetitionResult() {
     competitionState.playerEntry = data.playerEntry || data.entry || competitionState.playerEntry;
     renderCompetitionCard();
     if (data.improved) {
-      renderCompetitionFinalStatus(`ランキング登録完了。現在 ${data.rank} 位で自己ベスト更新です。`, 'success');
+      renderCompetitionFinalStatus(t('comp.submitSuccessImproved', {rank: data.rank}), 'success');
     } else {
-      renderCompetitionFinalStatus(`送信完了。今回のスコアでは自己ベストを更新せず、現在順位は ${data.rank} 位です。`, 'success');
+      renderCompetitionFinalStatus(t('comp.submitSuccessNoImprove', {rank: data.rank}), 'success');
     }
   } catch (error) {
-    renderCompetitionFinalStatus(`ランキング送信に失敗しました: ${error.message}`, 'error');
+    renderCompetitionFinalStatus(t('comp.submitError', {error: error.message}), 'error');
   } finally {
     competitionState.isSubmitting = false;
   }
