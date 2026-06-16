@@ -291,28 +291,7 @@
       </div>
 
       <p><span data-i18n="control.remainingBudget">残り予算:</span> <strong id="remaining-budget">$0</strong></p>
-      <div id="allocation-warning" class="warning" role="alert"></div>
-
-      <div id="impact-preview" class="impact-preview small-panel panel" aria-live="polite">
-        <h4 data-i18n="feature.preview.title">影響プレビュー</h4>
-        <div class="impact-grid">
-          <div>
-            <span data-i18n="preview.mixUnallocated">配分</span>
-            <strong id="preview-mix" data-i18n="preview.mixNotSet">未設定</strong>
-          </div>
-          <div>
-            <span data-i18n="preview.outcomeAdaptation">気候対応</span>
-            <strong id="preview-risk">-</strong>
-          </div>
-          <div>
-            <span data-i18n="preview.outcomeBalanced">政策シグナル</span>
-            <strong id="preview-outcome">-</strong>
-          </div>
-        </div>
-        <p id="preview-guidance" class="preview-guidance" data-i18n="preview.guidanceInit">スライダーを動かすと、このターンの狙いが表示されます。</p>
-      </div>
-
-      <div class="buttons">
+      <div id="allocation-warning" class="warning" role="alert"></div>      <div class="buttons">
         <button id="execute-turn-button" class="button-primary" data-i18n="control.execute">ターンを実行</button>
         <button id="auto-allocate-button" class="button-secondary" data-i18n="control.autoAllocate">自動配分</button>
         <button id="special-skill" class="button-ghost" data-i18n="control.specialSkill">国家スキル</button>
@@ -332,13 +311,37 @@
       <p class="result" id="turn-result-text" data-i18n="report.noTurn">未実行</p>
       <p class="event" id="event-text">-</p>
       <p class="un-report" id="un-report">-</p>
-      <div id="climate-pulse-panel" class="small-panel panel climate-pulse-panel">
+	      <div id="log" class="log-area" aria-live="polite"></div>
+	    </div>
+  
+
+
+      <div id="impact-preview" class="impact-preview small-panel panel game-layout__wide" aria-live="polite">
+        <h4 data-i18n="feature.preview.title">影響プレビュー</h4>
+        <div class="impact-grid">
+          <div>
+            <span data-i18n="preview.mixUnallocated">配分</span>
+            <strong id="preview-mix" data-i18n="preview.mixNotSet">未設定</strong>
+          </div>
+          <div>
+            <span data-i18n="preview.outcomeAdaptation">気候対応</span>
+            <strong id="preview-risk">-</strong>
+          </div>
+          <div>
+            <span data-i18n="preview.outcomeBalanced">政策シグナル</span>
+            <strong id="preview-outcome">-</strong>
+          </div>
+        </div>
+        <p id="preview-guidance" class="preview-guidance" data-i18n="preview.guidanceInit">スライダーを動かすと、このターンの狙いが表示されます。</p>
+      </div>
+
+      <div id="climate-pulse-panel" class="small-panel panel climate-pulse-panel game-layout__wide">
         <h4 data-i18n="report.climatePulseHeading">気候パルス解析</h4>
         <p id="climate-pulse-text" data-i18n="report.climatePulsePlaceholder">ミッション開始後に表示されます。</p>
         <div id="climate-pulse-tags" class="pulse-tags" data-i18n-aria="report.climatePulseTagsAria" aria-label="気候パルスタグ"></div>
       </div>
-      <div id="log" class="log-area" aria-live="polite"></div>
-      <div id="history-panel" class="small-panel panel">
+
+      <div id="history-panel" class="small-panel panel game-layout__wide">
         <h4 data-i18n="report.historyHeading">ターン履歴</h4>
         <div class="history-table-wrap">
           <table class="history-table" data-i18n-aria="report.historyTableAria" aria-label="ターン履歴の表">
@@ -358,8 +361,7 @@
           </table>
         </div>
       </div>
-    </div>
-  </main>
+</main>
 
   <div id="game-over-modal" class="modal-hidden" role="dialog" aria-modal="true">
     <div class="modal-content panel">
