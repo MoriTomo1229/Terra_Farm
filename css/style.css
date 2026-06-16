@@ -491,7 +491,6 @@ input[type="range"]:focus {
 .leaderboard-item,
 .trend-series,
 .history-table-wrap,
-.log-area,
 .small-panel {
   background: var(--color-surface-soft);
   border: 1px solid var(--color-border);
@@ -734,6 +733,11 @@ input[type="range"]:focus {
   grid-column: 2 / -1;
 }
 
+/* Column 3 panels (Turn Report) */
+.game-layout__col3 {
+  grid-column: 3;
+}
+
 /* Status panel spans all rows to stay aligned */
 #status-display {
   grid-row: 1 / -1;
@@ -842,7 +846,7 @@ input[type="range"]:focus {
 }
 
 .impact-grid div {
-  min-height: 88px;
+  min-height: 194px;
   padding: 12px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -1000,15 +1004,15 @@ input[type="range"]::-moz-range-thumb {
   font-style: italic;
 }
 
-.log-area {
-  max-height: 240px;
+.game-log {
+  max-height: 528px;
   overflow: auto;
-  padding: 14px;
-  margin-top: var(--space-3);
+  padding: 0;
+  margin-top: var(--space-1);
 }
 
 .history-table-wrap {
-  max-height: 260px;
+  max-height: 572px;
   overflow: auto;
   margin-top: var(--space-3);
   border-radius: 12px;
@@ -1339,6 +1343,10 @@ input[type="range"]::-moz-range-thumb {
     grid-column: 1 / -1;
     grid-row: auto;
   }
+
+  .game-layout__col3 {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1350,7 +1358,8 @@ input[type="range"]::-moz-range-thumb {
     grid-row: auto;
   }
 
-  .game-layout__wide {
+  .game-layout__wide,
+  .game-layout__col3 {
     grid-column: 1 / -1;
   }
 
@@ -1450,12 +1459,12 @@ input[type="range"]::-moz-range-thumb {
     grid-template-columns: minmax(280px, 1fr) repeat(3, minmax(160px, 0.32fr));
   }
 
-  .log-area {
-    max-height: 320px;
+  .game-log {
+    max-height: 704px;
   }
 
   .history-table-wrap {
-    max-height: 340px;
+    max-height: 748px;
   }
 }
 
@@ -1472,11 +1481,11 @@ input[type="range"]::-moz-range-thumb {
     grid-template-columns: minmax(0, 1.3fr) minmax(380px, 0.74fr) minmax(420px, 0.86fr);
   }
 
-  .log-area {
-    max-height: 380px;
+  .game-log {
+    max-height: 836px;
   }
 
   .history-table-wrap {
-    max-height: 400px;
+    max-height: 880px;
   }
 }
