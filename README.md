@@ -1,115 +1,122 @@
-# Terra Farm — 完全拡張版
+# Terra Farm
 
-Terra Farmは、国家の農業政策を運営し、食料生産と環境の持続可能性のバランスを目指す戦略シミュレーションゲームです。プレイヤーは国を選択し、限られた予算内で作物、肥料、灌漑、技術に投資し、ターンごとに変化する状況に対応しながら高スコアを目指します。
+Terra Farm is a strategic simulation game where you manage a nation's agricultural policy, balancing food production with environmental sustainability. Choose a country, invest a limited budget across crops, fertilizer, irrigation, and technology, and respond to changing conditions each turn as you aim for a high final score.
 
-## スクリーンショット
+## Screenshots
 
-*ゲームのプレイ画面です。後ほど、実際のスクリーンショット画像（例: `1.png`）に差し替えてください。*
+![Terra Farm Gameplay](images/gameplay.png)
 
-![Terra Farm Gameplay](https://via.placeholder.com/1200x600.png?text=Terra+Farm+Screenshot)
+## Key Features
 
-## 主な機能
+- **Country Selection**: Choose from six countries (USA, China, India, Brazil, Egypt, Ireland), each with unique traits and starting conditions across five historical eras.
+- **Strategic Investment**: Allocate your budget across crops, fertilizer, irrigation, and advanced technology using intuitive sliders.
+- **Turn-Based Progression**: Make investment decisions, then execute a turn to see results simulated — crop yields, revenue, environmental impact, and more.
+- **NDVI Map**: A satellite-data-inspired map visualizes vegetation health across your nation, updating each turn.
+- **Dynamic Events**: Random events and UN reports occur each turn, forcing you to adapt your strategy.
+- **Turn History & Logs**: Investment breakdowns, NDVI averages, environmental scores, and revenue are recorded each turn in a history panel and downloadable as JSON.
+- **Scoring**: Final score calculated from total revenue, environmental score, and technology level.
+- **Challenge Modes**: Choose from Free Play, Eco Keeper (final environmental score ≥ 80), or Growth Drive (1.8× total revenue). Pass/fail is shown at game over.
+- **Frontier Lab**: A dedicated mode set in hotter, drier conditions where you pursue the "Regeneration Loop" challenge (environment ≥ 78, initial NDVI +0.03, resilience ≥ 70).
+- **Climate Pulse & Resilience**: Per-turn climate risk, regeneration power, and attention tags displayed as a mission pulse panel and recorded in history and logs.
+- **Impact Preview**: Before executing a turn, preview your allocation mix, climate readiness, and policy signals derived from your slider positions.
+- **Signal Theme**: A high-contrast, mission-control-inspired theme in addition to standard dark and light modes — highlights climate risk and critical indicators.
+- **Trend Charts**: Mini bar + line charts show recent revenue, average NDVI, environmental score, and tech points at a glance.
+- **One-Click Allocation Presets**: Apply "Eco Focus", "Profit Focus", or "Tech Focus" ratios instantly. Save your current slider values as a custom preset for later reuse.
+- **Competition Mode**: Enter a player name and compete under fixed-seed tournament conditions. Rankings are stored in Cloudflare D1 and surfaced via a leaderboard.
+- **i18n Support**: Japanese and English language support (switchable on the start screen).
 
-- **国家選択**: それぞれ異なる特性や初期スキルを持つ国（アメリカ、中国、インドなど）を選択できます。
-- **戦略的な投資**: 作物、肥料、灌漑、先端技術への予算配分をスライダーで直感的に決定できます。
-- **ターンベース進行**: 投資判断を下し、「ターンを実行」することで結果がシミュレートされます。
-- **NDVIマップ**: 衛星データ（NDVI）に基づいたマップで、土地の植生状態を視覚的に確認できます。
-- **ダイナミックなイベント**: 各ターンでランダムなイベントや国連からのレポートが発生し、戦略に影響を与えます。
-- **ターン履歴 & ログ**: 投資配分やNDVI平均、環境スコア、収入がリアルタイムに履歴パネルへ蓄積され、JSONログとしてダウンロードできます。
-- **スコアリング**: 最終的な総収入、環境スコア、技術レベルに基づいて総合スコアが算出されます。
-- **チャレンジモード**: 「フリー」「環境キーパー（最終環境スコア80以上）」「成長ドライブ（総収入1.8倍）」を選択可能。達成/未達成がゲーム終了時に表示されます。
-- **フロンティア・ラボ**: 高温・乾燥化が進む条件で「再生ループ（環境78以上 / 初期NDVI+0.03 / レジリエンス70以上）」に挑む新モードです。
-- **気候パルス & レジリエンス**: ターンごとの気候リスク、再生力、注意タグをミッションパルスとして表示し、履歴とログにも記録します。
-- **影響プレビュー**: 肥料・灌漑・技術スライダーの配分から、気候対応力と政策シグナルをターン実行前に確認できます。
-- **シグナルテーマ**: ダーク/ライトに加え、気候リスクや重要指標を強調するミッション管制風テーマを選択できます。
-- **トレンドチャート**: 直近の収入・平均NDVI・環境スコア・技術ポイントをミニチャート（棒＋折れ線）で可視化し、成長具合をひと目で確認できます。
-- **ワンクリック配分プリセット**: 「環境重視」「収益重視」「技術重視」の比率を一括適用。現在のスライダー値を「カスタム」として保存・再適用も可能。
-- **競争モード**: プレイヤー名を入力し、固定シードの大会条件でランキングに参加できます。ローカルでも Cloudflare Pages Functions + D1 を使って本番に近い構成で確認できます。
+## Tech Stack
 
-## 技術スタック / 実行環境
+- **Frontend**: Vanilla HTML / CSS / JavaScript (ES6) — no framework dependencies
+- **Cloudflare Integration**: `wrangler` for local Pages Functions / D1 development, designed for Cloudflare Pages deployment
+- **Libraries**: Zero external runtime dependencies
+- **Serving**: Uses `fetch` and `/api/*` routes, so `file://` direct open does not work. Default is `npm run dev` which starts the Cloudflare local environment.
 
-- **フロントエンド**: 純粋な HTML / CSS / JavaScript (ES6)
-- **Cloudflare 連携**: `wrangler` による Pages Functions / D1 ローカル実行、将来の Cloudflare Pages デプロイ前提
-- **ライブラリ**: 追加の外部依存なし（`phina.js` をCDN読み込みしていますが現行ロジックでは未使用）
-- **実行方法**: `fetch` と `/api/*` を使うため、`file://` 直開きは不可。既定は `npm run dev` で Cloudflare ローカル環境を起動します。
-
-## セットアップ
+## Setup
 
 ```bash
-npm install          # 初回のみ
-npm run dev          # D1 migration適用 + Pages Functions起動
+npm install          # First time only
+npm run dev          # Applies D1 migrations + starts Pages Functions
 ```
 
-起動後は `http://127.0.0.1:8080/` を開いてください。`npm run dev` は毎回ローカルD1へ migration を適用してから `wrangler pages dev` を起動するため、競争モードのランキング取得・送信も同一オリジンで確認できます。
+Open `http://127.0.0.1:8080/` in your browser. `npm run dev` applies local D1 migrations before launching `wrangler pages dev`, so competition mode rankings (fetch and submit) work on the same origin.
 
-### 静的だけ確認したい場合
+### Static-only preview
 
 ```bash
 npm run dev:static
 ```
 
-このモードではランキングAPIは動かず、競争モードの取得・送信は失敗します。UI確認専用と考えてください。
+In this mode the ranking API is unavailable — competition mode fetch/submit will fail. Use this for UI-only checks.
 
-### Dockerでの実行
+### Docker
 
-Nodeをローカルに入れなくても、Dockerと`docker-compose`（ハイフン区切りのCLI）で起動できます。
+You can run the app without installing Node locally using Docker and `docker-compose`.
 
 ```bash
-# イメージをビルド
+# Build the image
 docker-compose build
 
-# 起動（デフォルトはポート8080。別ポートにしたい場合は PORT=8081 などを指定）
+# Start (default port 8080; set PORT=8081 etc. to change)
 PORT=8080 docker-compose up -d
 
-# 停止
+# Stop
 docker-compose down
 ```
 
-起動後、ブラウザで `http://localhost:8080/` を開くとゲームが表示されます（`PORT` を変えた場合はそのポート番号）。
+Open `http://localhost:8080/` (or your custom port) to play.
 
-## 遊び方
+## How to Play
 
-特別なビルドやサーバー環境は不要です。
+1. Clone the repository and run `npm run dev` to start the local server.
+2. Open `http://127.0.0.1:8080/` and choose your **player name**, **play mode**, **display theme**, and **language** on the start screen.
+3. In Solo mode, freely configure your **country**, **starting budget**, **mission year**, and **challenge**. Frontier Lab locks the challenge to "Regeneration Loop". Competition mode uses fixed tournament conditions.
+4. On the main screen, adjust sliders in the "Policy & Investment" panel. Use presets (Eco / Profit / Tech) or save and apply a custom preset to speed things up.
+5. Before executing a turn, check the **Impact Preview** for your allocation mix, climate readiness, and policy signals.
+6. Click **Execute Turn** to advance one turn. Results appear in the report, with mission pulse showing climate risk and resilience, and trend charts showing recent revenue, NDVI, environment, and tech points.
+7. Scroll to **Turn History** below the report to review recent investment balance, NDVI, revenue, environmental score, and climate risk/resilience. Use **Download Log** to export detailed logs as JSON.
+8. When the final turn ends, your total score and challenge result are displayed. In Competition mode, your score is automatically submitted at this point.
 
-1.  このリポジトリを取得し、`npm run dev` でローカルサーバを立ち上げます。
-2.  ブラウザで `http://127.0.0.1:8080/` を開き、スタート画面で**プレイヤー名**、**プレイモード**、**表示テーマ**を選択します。
-3.  通常プレイでは**国、初期予算、ミッション年、チャレンジ**を自由に設定できます。フロンティア・ラボではチャレンジが「再生ループ」に固定され、競争モードでは大会条件が固定されます。
-4.  メイン画面の「政策と投資」パネルでスライダーを調整。時間短縮したいときはプリセット（環境/収益/技術）や「カスタム保存→適用」を活用してください。
-5.  ターン実行前に「影響プレビュー」で配分ミックス、気候対応、政策シグナルを確認します。
-6.  「ターンを実行」ボタンで1ターン進行。結果はレポートに表示され、ミッションパルスで気候リスクとレジリエンス、トレンドチャートで直近の収入・NDVI・環境・技術ポイントの推移を確認できます。
-7.  レポート下部の「ターン履歴」で直近の投資バランス、NDVI、収入、環境スコア、気候リスク/レジリエンスを確認。「ログをダウンロード」からJSON形式で詳細ログを取得できます。
-8.  最終ターンが終了するとゲームオーバーとなり、最終スコアとチャレンジ達成状況が表示されます。競争モードではこのタイミングでスコアが自動送信されます。
-
-## ファイル構成
+## File Structure
 
 ```
 /
-├── index.html          # アプリケーションのメインHTMLファイル
-├── wrangler.jsonc      # Cloudflare Pages / D1 の設定
+├── index.html              # Main HTML file
+├── wrangler.jsonc          # Cloudflare Pages / D1 configuration
+├── Dockerfile              # Docker image definition
+├── docker-compose.yml      # Docker Compose configuration
 ├── css/
-│   └── style.css       # 全体のスタイルシート
+│   └── style.css           # Stylesheet
 ├── functions/
-│   ├── api/            # Pages Functions の API ルート
-│   └── _lib/           # API共有ヘルパー
+│   ├── api/                # Pages Functions API routes
+│   │   ├── competition     # Competition mode endpoints
+│   │   └── leaderboard.js  # Leaderboard endpoint
+│   └── _lib/               # Shared API helpers
 ├── js/
-│   ├── competition.js  # 競争モード、seeded RNG、ランキング連携
-│   ├── main.js         # エントリーポイント、全体の初期化
-│   ├── game-logic.js   # ゲームのコアロジック（ターン進行、スコア計算など）
-│   ├── ui.js           # UIの更新、イベントハンドリング
-│   ├── map.js          # NDVIマップの描画処理
-│   ├── state.js        # ゲーム状態の管理（予算、スコア、現在の設定など）
-│   └── config.js       # ゲームの基本設定（作物データ、イベント定義など）
+│   ├── main.js             # Entry point and initialization
+│   ├── config.js           # Game constants (crop data, event definitions)
+│   ├── state.js            # Game state management (budget, score, settings)
+│   ├── ui.js               # UI updates and event handling
+│   ├── game-logic.js       # Core game logic (turn processing, scoring)
+│   ├── map.js              # NDVI map rendering
+│   ├── competition.js      # Competition mode, seeded RNG, ranking integration
+│   └── i18n.js             # Internationalization (Japanese / English)
 ├── migrations/
-│   └── 0001_competition_mode.sql  # D1スキーマと初期大会データ
+│   └── 0001_competition_mode.sql  # D1 schema and initial tournament data
 ├── data/
-│   └── maps/           # 各国・各年代のNDVIマップデータ (JSON形式)
+│   └── maps/               # Per-country, per-era NDVI map data (JSON)
 └── images/
-    ├── earth.jpg       # 背景画像
-    └── nasa_logo.png   # UI用ロゴ画像
+    ├── earth.jpg           # Background image
+    ├── nasa_logo.png       # NASA logo for UI
+    └── gameplay.png        # Gameplay screenshot
 ```
 
-## Cloudflare Pages への展開メモ
+## Deployment (Cloudflare Pages)
 
-- ローカルでは `npm run dev` が `wrangler pages dev` を使うため、本番の Pages Functions と同じ `/api/*` 経路で動作確認できます。
-- 競争モードのランキングは D1 バインディング `DB` を前提にしています。
-- Pages Functions を使うため、静的ファイルだけのアップロードではなく Functions を含む形でデプロイする前提です。
+- `npm run dev` uses `wrangler pages dev` locally, so API routes under `/api/*` work identically to production Pages Functions.
+- Competition mode rankings rely on the D1 binding `DB`.
+- Deployment requires uploading with Functions included (not static-only assets).
+
+## License
+
+MIT
