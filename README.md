@@ -1,6 +1,8 @@
 # Terra Farm
 
-Terra Farm is a strategic simulation game where you manage a nation's agricultural policy, balancing food production with environmental sustainability. Choose a country, invest a limited budget across crops, fertilizer, irrigation, and technology, and respond to changing conditions each turn as you aim for a high final score.
+[![NASA Space Apps Challenge](https://img.shields.io/badge/NASA-Space%20Apps%20Challenge-0B3D91?logo=nasa)](https://www.spaceappschallenge.org/)
+
+Terra Farm is a strategic simulation game developed for the **NASA Space Apps Challenge** where you manage a nation's agricultural policy, balancing food production with environmental sustainability. Choose a country, invest a limited budget across crops, fertilizer, irrigation, and technology, and respond to changing conditions each turn as you aim for a high final score.
 
 ## Screenshots
 
@@ -83,6 +85,7 @@ Open `http://localhost:8080/` (or your custom port) to play.
 /
 ├── index.html              # Main HTML file
 ├── wrangler.jsonc          # Cloudflare Pages / D1 configuration
+├── _headers                # Cloudflare Pages security headers (CSP, HSTS)
 ├── Dockerfile              # Docker image definition
 ├── docker-compose.yml      # Docker Compose configuration
 ├── css/
@@ -116,6 +119,29 @@ Open `http://localhost:8080/` (or your custom port) to play.
 - `npm run dev` uses `wrangler pages dev` locally, so API routes under `/api/*` work identically to production Pages Functions.
 - Competition mode rankings rely on the D1 binding `DB`.
 - Deployment requires uploading with Functions included (not static-only assets).
+
+## Credits & Attribution
+
+- **NASA Space Apps Challenge**: This project was created as part of the [NASA Space Apps Challenge](https://www.spaceappschallenge.org/). The NASA logo and branding are used under the challenge guidelines for project presentation purposes.
+- **Satellite Imagery**: Background image and map visualizations are inspired by NASA Earth observations. NDVI (Normalized Difference Vegetation Index) data concepts are derived from NASA MODIS (MOD13A3).
+- **Icons & Assets**: Country flag emojis are standard Unicode emoji provided by the operating system.
+
+## Security Disclaimer
+
+### Competition Mode
+
+The competition mode leaderboard is implemented **for demonstration and casual play only**. Key limitations:
+
+- **No authentication**: Anyone can submit scores under any player name.
+- **Client-side trust**: Game results are computed in the browser and sent to the server without server-side revalidation. A motivated user could tamper with their submitted score.
+- **Best-effort rate limiting**: Rate limiting relies on in-memory state that does not persist across Cloudflare Workers instances.
+
+These are intentional trade-offs for a hackathon project. **Do not rely on this implementation for production or competitive integrity.** If deploying competitively, add server-side game simulation, authentication, and WAF-based rate limiting.
+
+### General
+
+- This application uses `localStorage` to store your player name, anonymous player ID, and theme preference. No personal data is transmitted to third parties.
+- API endpoints are unauthenticated — do not expose sensitive data through them.
 
 ## License
 
