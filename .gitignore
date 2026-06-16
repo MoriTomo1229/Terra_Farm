@@ -2,6 +2,6 @@ node_modules/
 .wrangler/
 .DS_Store
 .agent/
-/plans
+plans/
 AGENTS.md
 DESIGN.md
