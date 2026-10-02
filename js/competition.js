@@ -1,11 +1,11 @@
 // ==================== 競争モード ====================
 
-const COMPETITION_SIMULATION_VERSION = '2026-10-competition-v2';
+const COMPETITION_SIMULATION_VERSION = '2026-10-competition-v3';
 const PLAYER_PROFILE_STORAGE_KEY = 'terra_farm_player_profile_v1';
 const COMPETITION_LEADERBOARD_STORAGE_KEY = 'terra_farm_local_leaderboard_v1';
 const MAX_PLAYER_NAME_LENGTH = 20;
 const LOCAL_COMPETITION_EVENT = {
-  id: 'local-balanced-cup-2026-v2',
+  id: 'local-balanced-cup-2026-v3',
   name: 'Local Balanced Cup',
   description: '固定シードのローカル大会です。ランキングはこのブラウザ内に保存されます。',
   countryKey: 'usa',

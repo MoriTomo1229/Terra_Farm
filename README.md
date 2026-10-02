@@ -16,7 +16,7 @@ Terra Farm is a strategic simulation game developed for the **NASA Space Apps Ch
 - **NDVI Map**: A satellite-data-inspired map visualizes vegetation health across your nation, updating each turn.
 - **Dynamic Events**: Random events and UN reports occur each turn, forcing you to adapt your strategy.
 - **Turn History & Logs**: Investment breakdowns, NDVI averages, environmental scores, and revenue are recorded each turn in a history panel and downloadable as JSON.
-- **スコア**: 初期予算に対する残高・総収入の比率、環境スコア、技術時代から計算します。経済点は各比率3倍までを評価し、大きな初期予算だけでは有利になりません。
+- **スコア**: 初期予算に対する残高・総収入の比率、環境スコア、技術時代から計算します。経済点は各比率15倍までを評価し、大きな初期予算だけでは有利になりません。
 - **Challenge Modes**: Choose from Free Play, Eco Keeper (final environmental score ≥ 80), or Growth Drive (1.8× total revenue). Pass/fail is shown at game over.
 - **Frontier Lab**: A dedicated mode set in hotter, drier conditions where you pursue the "Regeneration Loop" challenge (environment ≥ 78, initial NDVI +0.03, resilience ≥ 70).
 - **Climate Pulse & Resilience**: Per-turn climate risk, regeneration power, and attention tags displayed as a mission pulse panel and recorded in history and logs.
@@ -58,9 +58,11 @@ npm test           # Node.js 標準の単体・回帰テスト
 ## 経済バランスと保存データ
 
 - 推奨初期予算は農業政策予算の規模（USA $200M〜Ireland $15M）です。国を変更すると自動補完され、手動編集もできます。
-- 投資の正規化下限・技術ポイントの投資閾値も旧予算から1000分の1に調整しています。技術ポイントによる生産効率は3倍までとし、収益の無制限な膨張を防ぎます。
-- スコアは `min(残高 / 初期予算, 3) × 1000 + min(総収入 / 初期予算, 3) × 1000 + 環境スコア × 100 + 技術時代 × 1000` です。
-- 大会ルールは `2026-10-competition-v2` です。旧大会スコアは削除せず保存しますが、新大会のランキングには混ぜません。
+- 生産量は国家規模（初期予算）に比例させ、国間・ターン間で収益比を比較できるようにしています。投資の正規化は「現在予算」基準で行い、予算規模や開始額に依らず同じ配分比が同じ効果になるようにしています（固定の下限は設けません）。
+- 生産には肥料・灌漑・技術の投入バランスが必要です。肥料や灌漑を欠いた技術全振りでは収益が伸びず、環境目標（環境キーパー／再生ループ）は施肥を抑えた灌漑・技術投資で達成します。技術ポイントによる生産効率は3倍までとし、収益の無制限な膨張を防ぎます。
+- 環境スコアは政策の持続可能性（施肥・水管理・技術）から目標値を算出し、毎ターンそこへ寄せます。肥料は減点、灌漑は加点、技術はわずかに加点です。
+- スコアは `min(残高 / 初期予算, 15) × 1000 + min(総収入 / 初期予算, 15) × 1000 + 環境スコア × 100 + 技術時代 × 1000` です。
+- 大会ルールは `2026-10-competition-v3` です。旧大会スコアは削除せず保存しますが、新大会のランキングには混ぜません。
 - カスタム配分はブラウザの `localStorage` に保存し、リロード・次のミッションで復元します。保存が禁止されている環境では現在のセッション内だけで使えます。
 
 ## How to Play

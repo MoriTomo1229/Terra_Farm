@@ -22,6 +22,18 @@ test('リーダーボードの技術時代は日英の時代名で描画する',
   }
 });
 
+test('旧ルールセット版で保存された大会スコアは現行ランキングから除外する', () => {
+  const { run, storage } = loadGame();
+  run(`saveLocalLeaderboard([
+    {eventId: LOCAL_COMPETITION_EVENT.id, simulationVersion: '2026-10-competition-v2', finalScore: 999999},
+    {eventId: LOCAL_COMPETITION_EVENT.id, simulationVersion: COMPETITION_SIMULATION_VERSION, finalScore: 100}
+  ]);`);
+  const ranked = run('getCompetitionSnapshot().leaderboard');
+  assert.equal(ranked.length, 1);
+  assert.equal(ranked[0].finalScore, 100);
+  assert.equal(JSON.parse(storage.get('terra_farm_local_leaderboard_v1')).length, 2);
+});
+
 test('旧大会スコアは保存を維持しつつ新大会ランキングから除外する', () => {
   const { run, storage } = loadGame();
   run(`saveLocalLeaderboard([

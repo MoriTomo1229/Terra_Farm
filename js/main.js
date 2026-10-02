@@ -235,8 +235,8 @@ function attachListeners() {
     if (state.countryKey) renderUI();
     else renderImpactPreview();
   });
-  if (elements.presetEnv) elements.presetEnv.addEventListener('click', () => applyPreset({fert:0.45, irri:0.35, tech:0.2}, t('control.presetEnv')));
-  if (elements.presetRevenue) elements.presetRevenue.addEventListener('click', () => applyPreset({fert:0.55, irri:0.25, tech:0.2}, t('control.presetRevenue')));
+  if (elements.presetEnv) elements.presetEnv.addEventListener('click', () => applyPreset({fert:0.1, irri:0.45, tech:0.45}, t('control.presetEnv')));
+  if (elements.presetRevenue) elements.presetRevenue.addEventListener('click', () => applyPreset({fert:0.5, irri:0.3, tech:0.2}, t('control.presetRevenue')));
   if (elements.presetTech) elements.presetTech.addEventListener('click', () => applyPreset({fert:0.2, irri:0.25, tech:0.55}, t('control.presetTech')));
   if (elements.presetCustomApply) elements.presetCustomApply.addEventListener('click', applyCustomPreset);
   if (elements.presetCustomSave) elements.presetCustomSave.addEventListener('click', saveCustomPreset);
