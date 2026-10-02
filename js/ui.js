@@ -2,6 +2,7 @@
 const $ = s => document.querySelector(s);
 const THEME_STORAGE_KEY = 'terra_farm_theme';
 const VALID_THEMES = ['dark', 'light', 'signal'];
+const CUSTOM_PRESET_STORAGE_KEY = 'terra_farm_custom_preset_v1';
 const elements = {
   startScreen: $('#start-screen'),
   playerNameInput: $('#player-name-input'),
@@ -11,6 +12,7 @@ const elements = {
   langSelect: $('#lang-select'),
   modeHelper: $('#mode-helper'),
   countrySelectRadios: document.getElementsByName('country'),
+  countryDetails: $('#country-details'),
   budgetInput: $('#budget-input'),
   yearSelect: $('#year-select'),
   challengeSelect: $('#challenge-select'),
@@ -196,30 +198,38 @@ function renderUI() {
   updateRemainingBudget();
 }
 
-function ndviToColor(v) {
-  if (v === null) return 'transparent';
-  if (v < 0.2) return '#d9534f';
-  if (v < 0.35) return '#f0ad4e';
-  if (v < 0.5) return '#ffd700';
-  if (v < 0.65) return '#8bc34a';
-  if (v < 0.8) return '#5cb85c';
-  return '#1b5e20';
+function renderCountryDetails() {
+  if (!elements.countryDetails) return;
+  const key = getSelectedCountryKey();
+  const country = COUNTRIES[key];
+  elements.countryDetails.textContent = t('start.countryDetails', {
+    climate: t('climate.' + country.climate),
+    skill: country.skill,
+    description: t('country.' + key + '.description'),
+    preferred: t('crop.' + country.preferred)
+  });
+}
+
+function ndviToRgb(v) {
+  if (v === null || !Number.isFinite(v)) return [0, 0, 0, 0];
+  if (v < 0.2) return [217, 83, 79, 255];
+  if (v < 0.35) return [240, 173, 78, 255];
+  if (v < 0.5) return [255, 215, 0, 255];
+  if (v < 0.65) return [139, 195, 74, 255];
+  if (v < 0.8) return [92, 184, 92, 255];
+  return [27, 94, 32, 255];
 }
 
 function renderMap() {
-  elements.map.innerHTML = '';
-  requestAnimationFrame(() => {
-    const fragment = document.createDocumentFragment();
-    for (let row = 0; row < MAP_SIZE; row++) {
-      for (let col = 0; col < MAP_SIZE; col++) {
-        const d = document.createElement('div');
-        const ndviValue = state.currentMapNdvi[row][col];
-        d.style.background = ndviValue !== null ? ndviToColor(ndviValue) : 'transparent';
-        fragment.appendChild(d);
-      }
+  const ctx = elements.map.getContext('2d');
+  if (!ctx) return;
+  const image = ctx.createImageData(MAP_SIZE, MAP_SIZE);
+  for (let row = 0; row < MAP_SIZE; row++) {
+    for (let col = 0; col < MAP_SIZE; col++) {
+      image.data.set(ndviToRgb(state.currentMapNdvi[row][col]), (row * MAP_SIZE + col) * 4);
     }
-    elements.map.appendChild(fragment);
-  });
+  }
+  ctx.putImageData(image, 0, 0);
 }
 
 function formatUSD(n) {
@@ -235,7 +245,8 @@ function populateCrops(preferred) {
   order.forEach(k => {
     const opt = document.createElement('option');
     opt.value = k;
-    opt.textContent = CROPS[k].name;
+    opt.setAttribute('data-i18n', 'crop.' + k);
+    opt.textContent = t('crop.' + k);
     elements.cropSelect.appendChild(opt);
   });
 }
@@ -417,8 +428,26 @@ function saveCustomPreset() {
     irriRatio: irri / sum,
     techRatio: tech / sum
   };
+  try {
+    localStorage.setItem(CUSTOM_PRESET_STORAGE_KEY, JSON.stringify(state.customPreset));
+  } catch (_) {
+    // 保存できない場合もセッション内では使える
+  }
   updateCustomPresetLabel();
   log(t('preset.customSaved'));
+}
+
+function loadCustomPreset() {
+  try {
+    const preset = JSON.parse(localStorage.getItem(CUSTOM_PRESET_STORAGE_KEY));
+    if (!preset || typeof preset !== 'object') return null;
+    const ratios = [preset.fertRatio, preset.irriRatio, preset.techRatio];
+    if (!ratios.every(value => Number.isFinite(value) && value >= 0 && value <= 1)) return null;
+    if (Math.abs(ratios.reduce((sum, value) => sum + value, 0) - 1) > 1e-6) return null;
+    return { fertRatio: ratios[0], irriRatio: ratios[1], techRatio: ratios[2] };
+  } catch (_) {
+    return null;
+  }
 }
 
 function applyCustomPreset() {
@@ -539,15 +568,6 @@ function renderTrendLine(svgEl, values, lineClass, dotClass) {
   circle.setAttribute('r', 3.5);
   circle.setAttribute('class', `trend-line-dot ${dotClass}`);
   svgEl.appendChild(circle);
-}
-
-function addToMiniGraph(value){
-  const bar = document.createElement('div');
-  bar.style.width = '10px';
-  bar.style.height = `${Math.min(80, Math.log10(value+10)*18)}px`;
-  bar.style.background = '#00bfff';
-  bar.style.borderRadius = '3px 3px 0 0';
-  document.getElementById('mini-graph').appendChild(bar);
 }
 
 function downloadHistory() {

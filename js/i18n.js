@@ -6,6 +6,29 @@ let currentLocale = 'en';
 // ---- Dictionary ----
 const DICT = {
   ja: {
+    'option.year-select.01': '2001',
+    'option.year-select.02': '2002',
+    'option.year-select.03': '2003',
+    'option.year-select.04': '2004',
+    'option.year-select.05': '2005',
+    'start.countryDetails': '気候: {climate} / スキル: {skill} / 得意作物: {preferred} — {description}',
+    'climate.temperate': '温帯',
+    'climate.varied': '多様',
+    'climate.tropical': '熱帯',
+    'climate.arid': '乾燥帯',
+    'climate.cool': '冷涼',
+    'crop.rice': '米',
+    'crop.wheat': '小麦',
+    'crop.potato': 'ジャガイモ',
+    'crop.corn': 'トウモロコシ',
+    'crop.barley': '大麦',
+    'crop.cassava': 'キャッサバ',
+    'country.usa.description': '広い温帯平原でトウモロコシと小麦が育ちます。',
+    'country.china.description': '多様な気候があり、灌漑地域では米が主力です。',
+    'country.india.description': 'モンスーン気候は米や多様な作物に適しています。',
+    'country.brazil.description': '広い熱帯地域でキャッサバや大豆が栽培されます。',
+    'country.egypt.description': '乾燥した河川流域では灌漑が重要です。',
+    'country.ireland.description': '冷涼で湿潤な気候でジャガイモが重要な作物です。',
     // ==== HTML: start screen ====
     'start.eyebrow': '農業政策シミュレーション',
     'start.subtitle': '複雑な農業政策を整理し、限られた予算で生産性と持続可能性の両立を目指すシミュレーションです。',
@@ -22,7 +45,7 @@ const DICT = {
     'start.countryHeading': '国を選択',
     'start.countryHeadingAria': '国を選択',
     'start.budgetLabel': '初期予算:',
-    'start.budgetPlaceholder': '例: 200B or 500M',
+    'start.budgetPlaceholder': '例: 200M または 15M',
     'start.budgetAria': '初期予算入力',
     'start.yearLabel': 'ミッション年:',
     'start.yearAria': 'ミッション年選択',
@@ -359,6 +382,29 @@ const DICT = {
   },
 
   en: {
+    'option.year-select.01': '2001',
+    'option.year-select.02': '2002',
+    'option.year-select.03': '2003',
+    'option.year-select.04': '2004',
+    'option.year-select.05': '2005',
+    'start.countryDetails': 'Climate: {climate} / Skill: {skill} / Preferred crop: {preferred} — {description}',
+    'climate.temperate': 'Temperate',
+    'climate.varied': 'Varied',
+    'climate.tropical': 'Tropical',
+    'climate.arid': 'Arid',
+    'climate.cool': 'Cool',
+    'crop.rice': 'Rice',
+    'crop.wheat': 'Wheat',
+    'crop.potato': 'Potato',
+    'crop.corn': 'Corn',
+    'crop.barley': 'Barley',
+    'crop.cassava': 'Cassava',
+    'country.usa.description': 'Large temperate plains — corn and wheat thrive.',
+    'country.china.description': 'Diverse climates — rice dominates irrigated regions.',
+    'country.india.description': 'Monsoon climates favor rice and diverse crops.',
+    'country.brazil.description': 'Large tropics; cassava and soybeans common.',
+    'country.egypt.description': 'Arid river valley — irrigation is crucial.',
+    'country.ireland.description': 'Cool wet climate — potatoes historically important.',
     // ==== HTML: start screen ====
     'start.eyebrow': 'Agricultural Policy Simulation',
     'start.subtitle': 'A simulation that organizes complex agricultural policies and aims to balance productivity and sustainability with limited budgets.',
@@ -375,7 +421,7 @@ const DICT = {
     'start.countryHeading': 'Select Country',
     'start.countryHeadingAria': 'Select country',
     'start.budgetLabel': 'Initial Budget:',
-    'start.budgetPlaceholder': 'e.g. 200B or 500M',
+    'start.budgetPlaceholder': 'e.g. 200M or 15M',
     'start.budgetAria': 'Initial budget input',
     'start.yearLabel': 'Mission Year:',
     'start.yearAria': 'Mission year selection',
@@ -740,11 +786,12 @@ function t(key, params) {
     if (typeof params === 'object' && !Array.isArray(params)) {
       for (var k in params) {
         if (Object.prototype.hasOwnProperty.call(params, k)) {
-          template = template.replace(new RegExp('\\{' + k + '\\}', 'g'), String(params[k] != null ? params[k] : ''));
+          const value = String(params[k] != null ? params[k] : '');
+          template = template.split('{' + k + '}').join(value);
         }
       }
     } else {
-      template = template.replace(/\{0\}/g, String(params));
+      template = template.replace(/\{0\}/g, () => String(params));
     }
   }
 
@@ -777,6 +824,7 @@ function setLocale(locale) {
   if (typeof renderSessionSummary === 'function') {
     renderSessionSummary();
   }
+  if (typeof renderCountryDetails === 'function') renderCountryDetails();
 }
 
 /**

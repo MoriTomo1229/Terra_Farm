@@ -16,13 +16,13 @@ Terra Farm is a strategic simulation game developed for the **NASA Space Apps Ch
 - **NDVI Map**: A satellite-data-inspired map visualizes vegetation health across your nation, updating each turn.
 - **Dynamic Events**: Random events and UN reports occur each turn, forcing you to adapt your strategy.
 - **Turn History & Logs**: Investment breakdowns, NDVI averages, environmental scores, and revenue are recorded each turn in a history panel and downloadable as JSON.
-- **Scoring**: Final score calculated from total revenue, environmental score, and technology level.
+- **スコア**: 初期予算に対する残高・総収入の比率、環境スコア、技術時代から計算します。経済点は各比率3倍までを評価し、大きな初期予算だけでは有利になりません。
 - **Challenge Modes**: Choose from Free Play, Eco Keeper (final environmental score ≥ 80), or Growth Drive (1.8× total revenue). Pass/fail is shown at game over.
 - **Frontier Lab**: A dedicated mode set in hotter, drier conditions where you pursue the "Regeneration Loop" challenge (environment ≥ 78, initial NDVI +0.03, resilience ≥ 70).
 - **Climate Pulse & Resilience**: Per-turn climate risk, regeneration power, and attention tags displayed as a mission pulse panel and recorded in history and logs.
 - **Impact Preview**: Before executing a turn, preview your allocation mix, climate readiness, and policy signals derived from your slider positions.
 - **Signal Theme**: A high-contrast, mission-control-inspired theme in addition to standard dark and light modes — highlights climate risk and critical indicators.
-- **Trend Charts**: Mini bar + line charts show recent revenue, average NDVI, environmental score, and tech points at a glance.
+- **Trend Charts**: Bar + line charts show recent revenue, average NDVI, environmental score, and tech points at a glance.
 - **One-Click Allocation Presets**: Apply "Eco Focus", "Profit Focus", or "Tech Focus" ratios instantly. Save your current slider values as a custom preset for later reuse.
 - **Competition Mode**: Enter a player name and compete under fixed-seed tournament conditions. Rankings are stored locally in your browser.
 - **i18n Support**: Japanese and English language support (switchable on the start screen).
@@ -41,6 +41,27 @@ npm run dev          # Starts a local static server
 ```
 
 Open `http://127.0.0.1:8080/` in your browser. You can change the port with `PORT=8081 npm run dev`.
+
+## 検証
+
+Node.js 22 または 24 で次を実行します。GitHub Actions でも両バージョンで同じ検証を行います。
+
+```bash
+npm ci
+npm run lint       # アプリ・テスト・スクリプトの構文チェック
+npm test           # Node.js 標準の単体・回帰テスト
+```
+
+翻訳の通貨置換、固定シード乱数、実マップによる生産量・予算計算、全6か国の10ターン戦略、チャレンジ境界値、Canvas の色と透明度、開始予算補完、カスタム配分の保存を検証します。
+ブラウザでの見た目・応答時間は単体テストの対象外です。
+
+## 経済バランスと保存データ
+
+- 推奨初期予算は農業政策予算の規模（USA $200M〜Ireland $15M）です。国を変更すると自動補完され、手動編集もできます。
+- 投資の正規化下限・技術ポイントの投資閾値も旧予算から1000分の1に調整しています。技術ポイントによる生産効率は3倍までとし、収益の無制限な膨張を防ぎます。
+- スコアは `min(残高 / 初期予算, 3) × 1000 + min(総収入 / 初期予算, 3) × 1000 + 環境スコア × 100 + 技術時代 × 1000` です。
+- 大会ルールは `2026-10-competition-v2` です。旧大会スコアは削除せず保存しますが、新大会のランキングには混ぜません。
+- カスタム配分はブラウザの `localStorage` に保存し、リロード・次のミッションで復元します。保存が禁止されている環境では現在のセッション内だけで使えます。
 
 ## How to Play
 
@@ -89,7 +110,7 @@ Open `http://127.0.0.1:8080/` in your browser. You can change the port with `POR
 
 ### General
 
-- This application uses `localStorage` to store your player name, anonymous player ID, theme preference, language preference, and browser-local competition scores.
+- このアプリはプレイヤー名、匿名ID、テーマ、言語、カスタム配分、ブラウザ内の大会スコアを `localStorage` に保存します。
 - Competition mode is for demonstration and casual local play. Scores are computed and stored in the browser, so they should not be treated as tamper-proof.
 
 ## License

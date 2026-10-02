@@ -1,11 +1,11 @@
 // ==================== ゲーム設定 ====================
 const COUNTRIES = {
-  usa:    {name:'United States', startingBudget:200e9, climate:'temperate', preferred:'corn',   description:'Large temperate plains — corn and wheat thrive.', flag:'🇺🇸', skill:'AgriBoost'},
-  china:  {name:'China',         startingBudget:180e9, climate:'varied',    preferred:'rice',   description:'Diverse climates — rice dominates irrigated regions.', flag:'🇨🇳', skill:'Dragon Plan'},
-  india:  {name:'India',         startingBudget:120e9, climate:'tropical',  preferred:'rice',   description:'Monsoon climates favor rice and diverse crops.', flag:'🇮🇳', skill:'Monsoon Mastery'},
-  brazil: {name:'Brazil',        startingBudget: 90e9, climate:'tropical',  preferred:'cassava',description:'Large tropics; cassava and soybeans common.', flag:'🇧🇷', skill:'Amazon Shield'},
-  egypt:  {name:'Egypt',         startingBudget: 60e9, climate:'arid',      preferred:'barley', description:'Arid river valley — irrigation is crucial.', flag:'🇪🇬', skill:'Nile Blessing'},
-  ireland:{name:'Ireland',       startingBudget: 15e9, climate:'cool',      preferred:'potato', description:'Cool wet climate — potatoes historically important.', flag:'🇮🇪', skill:'Emerald Surge'}
+  usa:    {name:'United States', startingBudget:200e6, climate:'temperate', preferred:'corn',   description:'Large temperate plains — corn and wheat thrive.', flag:'🇺🇸', skill:'AgriBoost'},
+  china:  {name:'China',         startingBudget:180e6, climate:'varied',    preferred:'rice',   description:'Diverse climates — rice dominates irrigated regions.', flag:'🇨🇳', skill:'Dragon Plan'},
+  india:  {name:'India',         startingBudget:120e6, climate:'tropical',  preferred:'rice',   description:'Monsoon climates favor rice and diverse crops.', flag:'🇮🇳', skill:'Monsoon Mastery'},
+  brazil: {name:'Brazil',        startingBudget: 90e6, climate:'tropical',  preferred:'cassava',description:'Large tropics; cassava and soybeans common.', flag:'🇧🇷', skill:'Amazon Shield'},
+  egypt:  {name:'Egypt',         startingBudget: 60e6, climate:'arid',      preferred:'barley', description:'Arid river valley — irrigation is crucial.', flag:'🇪🇬', skill:'Nile Blessing'},
+  ireland:{name:'Ireland',       startingBudget: 15e6, climate:'cool',      preferred:'potato', description:'Cool wet climate — potatoes historically important.', flag:'🇮🇪', skill:'Emerald Surge'}
 };
 
 const CROPS = {
@@ -82,7 +82,7 @@ function resolveChallengeGoal(challengeKey) {
 const GAME_CONFIG = {
   investment: {
     normalizerRatio: 0.35,
-    minNormalizer: 2e9,
+    minNormalizer: 2e6,
     fertShareCap: 1.4,
     irriShareCap: 1.3,
     techShareCap: 1.5,
@@ -125,7 +125,8 @@ const GAME_CONFIG = {
     base: 100000,
     ndviMultiplier: 500000,
     eraMultiplier: 0.12,
-    techPointFactor: 0.008, // 100 * 0.8 -> 0.8 / 100
+    techPointFactor: 0.0008,
+    techEfficiencyCap: 3,
     techInvestmentFactor: 0.4,
     agriBoostMultiplier: 1.2,
     dragonPlanMultiplier: 1.05,
@@ -188,8 +189,8 @@ const GAME_CONFIG = {
     amazonShieldMultiplier: 0.5,
   },
   technology: {
-    techGainDivisor: 1e7,
-    techGainRandomDivisor: 5e7,
+    techGainDivisor: 1e4,
+    techGainRandomDivisor: 5e4,
     agriBoostMultiplier: 1.2,
     unlocks: {
       ecoFertilizer: 300,
@@ -199,7 +200,9 @@ const GAME_CONFIG = {
     eraThresholds: [0, 50, 120, 240, 500, 1200, 2500],
   },
   scoring: {
-    budgetDivisor: 1e6,
+    budgetRatioMultiplier: 1000,
+    revenueRatioMultiplier: 1000,
+    maxEconomicRatio: 3,
     envScoreMultiplier: 100,
     eraMultiplier: 1000,
   },

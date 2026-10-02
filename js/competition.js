@@ -1,17 +1,17 @@
 // ==================== 競争モード ====================
 
-const COMPETITION_SIMULATION_VERSION = '2026-04-competition-v1';
+const COMPETITION_SIMULATION_VERSION = '2026-10-competition-v2';
 const PLAYER_PROFILE_STORAGE_KEY = 'terra_farm_player_profile_v1';
 const COMPETITION_LEADERBOARD_STORAGE_KEY = 'terra_farm_local_leaderboard_v1';
 const MAX_PLAYER_NAME_LENGTH = 20;
 const LOCAL_COMPETITION_EVENT = {
-  id: 'local-spring-opening-2026',
-  name: 'Local Spring Opening Cup',
+  id: 'local-balanced-cup-2026-v2',
+  name: 'Local Balanced Cup',
   description: '固定シードのローカル大会です。ランキングはこのブラウザ内に保存されます。',
   countryKey: 'usa',
   missionYear: '05',
   challengeKey: 'env_guard',
-  startingBudget: 200000000000,
+  startingBudget: COUNTRIES.usa.startingBudget,
   turnCount: 10,
   seed: 'spring-opening-seed-2026',
   rulesetVersion: COMPETITION_SIMULATION_VERSION,
@@ -129,8 +129,10 @@ function gameRandom() {
 
 function calculateFinalScore(snapshot = state) {
   const C = GAME_CONFIG.scoring;
+  const baseline = Math.max(1, snapshot.initialBudget || COUNTRIES.usa.startingBudget);
   return Math.round(
-    (snapshot.budget / C.budgetDivisor) +
+    (Math.min(C.maxEconomicRatio, Math.max(0, snapshot.budget / baseline)) * C.budgetRatioMultiplier) +
+    (Math.min(C.maxEconomicRatio, Math.max(0, (snapshot.totalFoodValue || 0) / baseline)) * C.revenueRatioMultiplier) +
     (snapshot.envScore * C.envScoreMultiplier) +
     (snapshot.eraIndex * C.eraMultiplier)
   );
@@ -181,6 +183,7 @@ function applyCompetitionModeToInputs() {
   } else if (frontierMode && elements.challengeSelect) {
     elements.challengeSelect.value = 'regen_loop';
   }
+  renderCountryDetails();
 
   if (!elements.modeHelper) return;
   if (competitionMode && event) {
@@ -261,7 +264,8 @@ function renderCompetitionLeaderboard() {
     const meta = document.createElement('span');
     meta.className = 'leaderboard-meta';
     const missionYear = entry.missionYear ? (2000 + parseInt(entry.missionYear, 10)) : '';
-    meta.textContent = t('comp.leaderboardMeta', {year: missionYear, env: entry.envScore, era: entry.eraIndex});
+    const eraName = t('era.' + (entry.eraIndex || 0));
+    meta.textContent = t('comp.leaderboardMeta', {year: missionYear, env: entry.envScore, era: eraName});
 
     const score = document.createElement('span');
     score.className = 'leaderboard-score';
@@ -360,7 +364,10 @@ function rankLeaderboard(entries) {
 }
 
 function getCompetitionSnapshot(playerId = ensurePlayerProfile().id) {
-  const ranked = rankLeaderboard(loadLocalLeaderboard());
+  const ranked = rankLeaderboard(loadLocalLeaderboard().filter(entry =>
+    entry.eventId === LOCAL_COMPETITION_EVENT.id &&
+    entry.simulationVersion === COMPETITION_SIMULATION_VERSION
+  ));
   return {
     event: LOCAL_COMPETITION_EVENT,
     leaderboard: ranked.slice(0, 10),
@@ -489,6 +496,7 @@ function submitCompetitionResult() {
 }
 
 function handleGameModeChange() {
+  if (getSelectedMode() !== 'competition' && elements.budgetInput.disabled) updateSelectedCountry();
   applyCompetitionModeToInputs();
   if (elements.startError) elements.startError.textContent = '';
 }

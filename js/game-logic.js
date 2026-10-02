@@ -281,7 +281,7 @@ function executeTurn() {
   // 生産量計算
   const crop = CROPS[elements.cropSelect.value];
   const eraMultiplier = 1 + state.eraIndex * C.production.eraMultiplier;
-  let techEff = 1 + state.techPoints * C.production.techPointFactor + (tech / (state.budget + 1)) * C.production.techInvestmentFactor;
+  let techEff = Math.min(C.production.techEfficiencyCap, 1 + state.techPoints * C.production.techPointFactor) + (tech / (state.budget + 1)) * C.production.techInvestmentFactor;
   if (state.unlocked.agriBoost) techEff *= C.production.agriBoostMultiplier;
   let regionFactor = 1.0;
   if (country.climate === 'arid') regionFactor = C.production.climateFactors.arid;
@@ -380,9 +380,6 @@ function executeTurn() {
   elements.turnResultText.textContent = t('turn.result', {crop: crop.name, production: production.toLocaleString(), revenue: formatUSD(revenue)});
   elements.eventText.textContent = event || t('event.none');
   log(t('turn.log', {turn: state.turn, revenue: formatUSD(revenue), event: event || t('turn.logNoEvent')}));
-
-  // ミニグラフ棒追加
-  addToMiniGraph(revenue);
 
   // 次ターンへ
   elements.executeButton.disabled = true;

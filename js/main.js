@@ -2,6 +2,17 @@
 
 function initStartScreen() {
   elements.startButton.addEventListener('click', onStart);
+  for (const radio of elements.countrySelectRadios) {
+    radio.addEventListener('change', updateSelectedCountry);
+  }
+  updateSelectedCountry();
+}
+
+function updateSelectedCountry() {
+  const country = COUNTRIES[getSelectedCountryKey()];
+  elements.budgetInput.value = formatBudgetInputValue(country.startingBudget);
+  renderCountryDetails();
+  elements.startError.textContent = '';
 }
 
 function getSelectedCountryKey() {
@@ -21,7 +32,8 @@ function parseBudgetInput(str) {
   let val = parseFloat(m[1]);
   if (m[2] === 'B') val *= 1e9;
   else if (m[2] === 'M') val *= 1e6;
-  return Math.round(val);
+  const amount = Math.round(val);
+  return Number.isSafeInteger(amount) ? amount : null;
 }
 
 function onStart() {
@@ -110,7 +122,6 @@ async function startGame(countryKey, startingBudget, year, challengeKey, options
       eraIndex: 0,
       challenge: challengeKey,
       challengeStatus: challengeKey === 'free' ? 'success' : 'pending',
-      customPreset: null,
       chartData: [],
       initialAvgNdvi,
       resilienceScore: 50,
@@ -251,6 +262,8 @@ document.addEventListener('DOMContentLoaded', function () {
   initLocale();
   applyTheme(getStoredTheme(), { persist: false });
   initStartScreen();
+  state.customPreset = loadCustomPreset();
+  updateCustomPresetLabel();
   attachListeners();
   bootstrapCompetition();
 });

@@ -86,6 +86,7 @@
       <label class="country-option"><input type="radio" name="country" value="egypt"> <span class="flag">🇪🇬</span> Egypt</label>
       <label class="country-option"><input type="radio" name="country" value="ireland"> <span class="flag">🇮🇪</span> Ireland</label>
       </div>
+      <p id="country-details" class="mode-helper" aria-live="polite"></p>
     </div>
 
     <div class="start-settings-grid">
@@ -220,11 +221,7 @@
         <span class="legend-box p6"></span><span data-i18n="status.legendVeryHigh">非常に高</span>
       </div>
 
-      <div id="map" class="map-grid" data-i18n-aria="status.mapAria" aria-label="NDVIマップ"></div>
-
-      <div class="small-panel panel">
-        <div id="mini-graph" style="display:flex; gap:4px; align-items:flex-end; height:90px;"></div>
-      </div>
+      <canvas id="map" class="map-grid" width="100" height="100" role="img" data-i18n-aria="status.mapAria" aria-label="NDVIマップ" aria-describedby="ndvi-value"></canvas>
       <div id="trend-chart" class="small-panel panel">
         <h4 data-i18n="trend.heading">ターンごとのトレンド</h4>
         <div class="trend-grid">

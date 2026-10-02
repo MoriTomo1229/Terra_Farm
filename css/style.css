@@ -728,6 +728,10 @@ input[type="range"]:focus {
   gap: var(--space-3);
 }
 
+.game-layout > * {
+  min-width: 0;
+}
+
 /* Wide panels span columns 2–3 (Investment Plan + Turn Report area) */
 .game-layout__wide {
   grid-column: 2 / -1;
@@ -766,19 +770,16 @@ input[type="range"]:focus {
 }
 
 .map-grid {
-  display: grid;
-  grid-template-columns: repeat(100, 1fr);
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  image-rendering: pixelated;
   margin-top: var(--space-3);
   overflow: hidden;
   border-radius: 18px;
   border: 1px solid var(--color-border);
   background: var(--color-map-bg);
-}
-
-.map-grid div {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  transition: background 220ms ease-in-out;
 }
 
 .legend {
@@ -1376,7 +1377,7 @@ input[type="range"]::-moz-range-thumb {
   .mission-pulse,
   .impact-grid,
   .game-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .header {
