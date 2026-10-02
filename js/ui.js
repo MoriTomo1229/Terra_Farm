@@ -329,9 +329,9 @@ function renderImpactPreview() {
 
   let outcome = total ? t('preview.outcomeBalanced') : t('preview.outcomeWaiting');
   if (fertPct >= 50 && techPct < 25) outcome = t('preview.outcomeShortTerm');
+  else if (fertPct <= 25 && irriPct >= 40) outcome = t('preview.outcomeRegen');
   else if (techPct >= 45) outcome = t('preview.outcomeTech');
   else if (irriPct >= 35 && riskAfterPolicy >= 45) outcome = t('preview.outcomeAdaptation');
-  else if (fertPct <= 35 && techPct >= 25 && irriPct >= 25) outcome = t('preview.outcomeRegen');
   else if (spendPct < 20) outcome = t('preview.outcomeReserve');
   elements.previewOutcome.textContent = outcome;
 

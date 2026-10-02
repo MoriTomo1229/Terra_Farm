@@ -92,7 +92,7 @@ const GAME_CONFIG = {
     techInvestmentBoostCap: 0.025,
   },
   map: {
-    techLevelBoost: 0.05,
+    techLevelBoost: 0.02,
     techLevelBoostDivisor: 20000,
     recoveryFactor: 0.9,
     emeraldRecoveryFactor: 0.88,
@@ -122,8 +122,10 @@ const GAME_CONFIG = {
     minNdvi: 0.05,
   },
   production: {
-    base: 100000,
-    ndviMultiplier: 500000,
+    // 生産は国家規模（初期予算）に比例させる。予算比率でスコア評価するため、
+    // 国間・ターン間で収益比を比較可能にする。
+    rateScale: 0.0003,
+    ndviMultiplier: 2.2,
     eraMultiplier: 0.12,
     techPointFactor: 0.0008,
     techEfficiencyCap: 3,
@@ -131,6 +133,16 @@ const GAME_CONFIG = {
     agriBoostMultiplier: 1.2,
     dragonPlanMultiplier: 1.05,
     orbitalNetMultiplier: 1.08,
+    // 投入バランス: 肥料と灌漑が無いと生産が伸びない（技術偏重の支配を防ぐ）
+    inputBalance: {
+      nutrientFloor: 0.55,    // 肥料ゼロ時の生産係数
+      nutrientPerShare: 0.6,  // 正規化シェア1.0あたりの加算
+      nutrientCap: 1.2,
+      waterFloor: 0.72,       // 灌漑ゼロ時の生産係数
+      waterPerShare: 0.3,
+      waterCap: 1.18,
+      drynessWeight: 0.5,     // 乾燥時は灌漑の寄与が増える
+    },
     climateFactors: {
       arid: 0.9,
       tropical: 1.05,
@@ -182,9 +194,13 @@ const GAME_CONFIG = {
     riskLevels: { crisis: 75, warning: 55, caution: 35 }
   },
   environment: {
-    fertPenalty: 14,
-    techBonus: 5,
-    irriBonus: 2,
+    // 政策の持続可能性から目標環境スコアを算出し、毎ターン目標へ寄せる。
+    // 肥料は減点、灌漑（水管理）は加点、技術はわずかに加点。
+    baseTarget: 62,
+    irriWeight: 18,
+    techWeight: 4,
+    fertWeight: 22,
+    drift: 0.35,
     ecoFertilizerMultiplier: 0.5,
     amazonShieldMultiplier: 0.5,
   },
@@ -202,7 +218,7 @@ const GAME_CONFIG = {
   scoring: {
     budgetRatioMultiplier: 1000,
     revenueRatioMultiplier: 1000,
-    maxEconomicRatio: 3,
+    maxEconomicRatio: 15,
     envScoreMultiplier: 100,
     eraMultiplier: 1000,
   },

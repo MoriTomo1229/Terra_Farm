@@ -218,7 +218,11 @@ function executeTurn() {
   if (typeof updateRemainingBudget === 'function') updateRemainingBudget();
 
   const C = GAME_CONFIG;
-  const baselineBudget = state.initialBudget || country?.startingBudget || 1;
+  // 正規化は「現在予算」基準にする。初期予算基準だと予算成長後に全投資が
+  // 上限へ張り付き、配分比が戦略として機能しなくなる（技術偏重の一因）。
+  const baselineBudget = state.budget > 0
+    ? state.budget
+    : (state.initialBudget || country?.startingBudget || 1);
   const investmentNormalizer = Math.max(C.investment.minNormalizer, baselineBudget * C.investment.normalizerRatio);
   let fertShare = fert / investmentNormalizer;
   let irriShare = irri / investmentNormalizer;
@@ -287,7 +291,22 @@ function executeTurn() {
   if (country.climate === 'arid') regionFactor = C.production.climateFactors.arid;
   if (country.climate === 'tropical') regionFactor = C.production.climateFactors.tropical;
 
-  let production = Math.round((C.production.base + state.avgNdvi * C.production.ndviMultiplier) * state.avgNdvi * eraMultiplier * techEff * crop.yieldFactor * regionFactor);
+  // 投入バランス: 肥料・灌漑が無いと生産が伸びない（技術偏重の支配を防ぐ）
+  const IB = C.production.inputBalance;
+  const nutrientFactor = Math.min(
+    IB.nutrientCap,
+    IB.nutrientFloor + safeFertShare * IB.nutrientPerShare
+  );
+  const waterFactor = Math.min(
+    IB.waterCap,
+    IB.waterFloor + safeIrriShare * (IB.waterPerShare + dryness * IB.drynessWeight)
+  );
+
+  let production = Math.round(
+    (state.initialBudget || country?.startingBudget || 1) * C.production.rateScale *
+    (state.avgNdvi * (1 + state.avgNdvi * C.production.ndviMultiplier)) *
+    eraMultiplier * techEff * crop.yieldFactor * regionFactor * nutrientFactor * waterFactor
+  );
   if (state.unlocked.dragonPlan) production = Math.round(production * C.production.dragonPlanMultiplier);
   if (state.unlocked.orbitalNet) production = Math.round(production * C.production.orbitalNetMultiplier);
 
@@ -325,10 +344,18 @@ function executeTurn() {
 
   const revenue = Math.round(production * crop.basePrice);
 
-  // 環境スコア変化
-  let envChange = -Math.round(safeFertShare * C.environment.fertPenalty) + Math.round((safeTechShare * C.environment.techBonus) + (safeIrriShare * C.environment.irriBonus));
-  if (state.unlocked.ecoFertilizer) envChange = Math.round(envChange * C.environment.ecoFertilizerMultiplier);
-  if (state.unlocked.amazonShield && envChange < 0) envChange = Math.round(envChange * C.environment.amazonShieldMultiplier);
+  // 環境スコア変化: 政策の持続可能性から目標値を決め、そこへ寄せる
+  const envCfg = C.environment;
+  const envTarget = clampNumber(
+    envCfg.baseTarget +
+    (safeIrriShare * envCfg.irriWeight) +
+    (safeTechShare * envCfg.techWeight) -
+    (safeFertShare * envCfg.fertWeight),
+    0, 100
+  );
+  let envChange = Math.round((envTarget - state.envScore) * envCfg.drift);
+  if (state.unlocked.ecoFertilizer && envChange < 0) envChange = Math.round(envChange * envCfg.ecoFertilizerMultiplier);
+  if (state.unlocked.amazonShield && envChange < 0) envChange = Math.round(envChange * envCfg.amazonShieldMultiplier);
   state.envScore = Math.max(0, Math.min(100, state.envScore + envChange));
 
   // 技術ポイント
