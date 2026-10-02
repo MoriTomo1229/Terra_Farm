@@ -82,7 +82,6 @@ function resolveChallengeGoal(challengeKey) {
 const GAME_CONFIG = {
   investment: {
     normalizerRatio: 0.35,
-    minNormalizer: 2e6,
     fertShareCap: 1.4,
     irriShareCap: 1.3,
     techShareCap: 1.5,

@@ -220,10 +220,12 @@ function executeTurn() {
   const C = GAME_CONFIG;
   // 正規化は「現在予算」基準にする。初期予算基準だと予算成長後に全投資が
   // 上限へ張り付き、配分比が戦略として機能しなくなる（技術偏重の一因）。
+  // 固定の下限は設けない。設けると小額予算で同じ配分比でも share が小さくなり、
+  // 環境目標（env_guard 等）が予算規模だけで達成不能になるため。
   const baselineBudget = state.budget > 0
     ? state.budget
     : (state.initialBudget || country?.startingBudget || 1);
-  const investmentNormalizer = Math.max(C.investment.minNormalizer, baselineBudget * C.investment.normalizerRatio);
+  const investmentNormalizer = Math.max(1, baselineBudget * C.investment.normalizerRatio);
   let fertShare = fert / investmentNormalizer;
   let irriShare = irri / investmentNormalizer;
   const techShare = tech / investmentNormalizer;

@@ -92,6 +92,18 @@ test('技術全振りは支配戦略ではなく、環境目標は施肥抑制�
   }
 });
 
+test('小額予算でも同じ配分比なら環境目標とチャレンジ判定が予算規模に依らず一貫する', async () => {
+  for (const budget of [1e6, 200e6]) {
+    const game = await prepare();
+    game.run(`state.initialBudget = ${budget}; state.budget = ${budget};
+      state.envScore = 70; state.challenge = 'env_guard'; state.challengeStatus = 'pending';`);
+    for (let turn = 0; turn < 10; turn++) playTurn(game, [0.1, 0.45, 0.45]);
+    game.run('finalizeChallengeOutcome()');
+    assert.ok(game.run('state.envScore') >= 80, `budget=${budget} で環境目標に到達する`);
+    assert.equal(game.run('state.challengeStatus'), 'success', `budget=${budget}`);
+  }
+});
+
 test('固定シードで10ターンの結果が再現する', async () => {
   const first = await prepare('usa', 'tournament');
   const second = await prepare('usa', 'tournament');
